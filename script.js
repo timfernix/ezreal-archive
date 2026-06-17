@@ -1,4 +1,4 @@
-const API_URL = '/api/skins'; 
+const API_URL = '/api'; 
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/'; 
 
 async function initGallery() {
