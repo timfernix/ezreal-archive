@@ -2,21 +2,41 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ezreal Archive | timfernix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ezreal Media Archive | timfernix</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="top-header">
-        <div class="brand-container">
-            <h1 class="brand-name">timfernix</h1>
-            <span class="brand-subtitle">Ezreal Media Archive</span>
-        </div>
-    </header>
-
-    <main class="container">
-        <div id="gallery-container" class="grid-layout">
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="brand-container">
+                <h1 class="brand-name">timfernix</h1>
+                <span class="brand-subtitle">Media Archive</span>
             </div>
+            
+            <div class="filter-bar">
+                <div class="search-wrapper">
+                    <input type="text" id="searchInput" placeholder="Suche nach Tags, Namen..." autocomplete="off">
+                </div>
+                <div class="select-group">
+                    <select id="skinFilter">
+                        <option value="all">Alle Skins</option>
+                    </select>
+                    <select id="gameFilter">
+                        <option value="all">Alle Spiele</option>
+                    </select>
+                    <select id="categoryFilter">
+                        <option value="all">Alle Kategorien</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="gallery-wrapper">
+        <div id="loading" class="state-message">Archiv wird synchronisiert...</div>
+        <div id="no-results" class="state-message hidden">Keine Medien für diese Filterkombination gefunden.</div>
+        <div id="gallery-container" class="grid-layout hidden"></div>
     </main>
 
     <script src="script.js" type="module"></script>
