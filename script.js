@@ -1,21 +1,14 @@
+// 1. GLOBAL VARIABLES & CONFIG
 const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
-
-// DOM Elements
-const container = document.getElementById('gallery-container');
-const loadingIndicator = document.getElementById('loading');
-const noResultsIndicator = document.getElementById('no-results');
-const searchInput = document.getElementById('searchInput');
-const skinFilter = document.getElementById('skinFilter');
-const gameFilter = document.getElementById('gameFilter');
-const categoryFilter = document.getElementById('categoryFilter');
-
 let allMediaItems = [];
-let activeFilters = {
-    games: [],
-    categories: []
-};
+let activeFilters = { games: [], categories: [] };
 
+// DOM Elements (at the top)
+const container = document.getElementById('gallery-container');
+const searchInput = document.getElementById('searchInput');
+
+// 2. MAIN INITIALIZATION
 async function init() {
     try {
         const response = await fetch(API_URL);
@@ -35,11 +28,11 @@ async function init() {
             });
         });
 
-        // Initialize UI
+        // Initialize UI components
         createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))], 'games');
         createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))], 'categories');
         
-        // Event Listeners for search and toggles
+        // Setup general listeners
         searchInput.addEventListener('input', applyFilters);
         document.querySelectorAll('.filter-toggle').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -48,12 +41,12 @@ async function init() {
         });
 
         renderGallery(allMediaItems);
-        loadingIndicator.classList.add('hidden');
     } catch (error) {
         console.error('API Error:', error);
     }
 }
 
+// 3. HELPER FUNCTIONS (Checkbox Generation)
 function createCheckboxes(menuId, options, filterType) {
     const menu = document.getElementById(menuId);
     options.forEach(opt => {
@@ -65,12 +58,13 @@ function createCheckboxes(menuId, options, filterType) {
             } else {
                 activeFilters[filterType] = activeFilters[filterType].filter(item => item !== opt);
             }
-            applyFilters();
+            applyFilters(); // Trigger filtering whenever a box is toggled
         });
         menu.appendChild(label);
     });
 }
 
+// 4. LOGIC FUNCTIONS (Filtering & Rendering)
 function applyFilters() {
     const searchTerm = searchInput.value.toLowerCase();
     
@@ -83,27 +77,6 @@ function applyFilters() {
     });
 
     renderGallery(filtered);
-}
-
-function populateDropdowns() {
-    const uniqueSkins = [...new Set(allMediaItems.map(m => m.skinName))].sort();
-    const uniqueGames = [...new Set(allMediaItems.map(m => m.game))].sort();
-    const uniqueCategories = [...new Set(allMediaItems.map(m => m.category))].sort();
-
-    const createOptions = (arr, element) => {
-        arr.forEach(item => {
-            if (item !== 'Unkategorisiert' && item !== 'Generisch') {
-                const opt = document.createElement('option');
-                opt.value = item;
-                opt.textContent = item;
-                element.appendChild(opt);
-            }
-        });
-    };
-
-    createOptions(uniqueSkins, skinFilter);
-    createOptions(uniqueGames, gameFilter);
-    createOptions(uniqueCategories, categoryFilter);
 }
 
 function renderGallery(items) {
