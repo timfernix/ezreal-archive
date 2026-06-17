@@ -1,43 +1,38 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ezreal Media Archive | timfernix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ezreal Media Archive</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="glass-nav">
         <div class="nav-content">
-            <div class="brand-container">
-                <h1 class="brand-name">timfernix</h1>
-                <span class="brand-subtitle">Media Archive</span>
-            </div>
-            
+            <h1 class="brand-name">Ezreal Media Archive</h1>
             <div class="filter-bar">
-                <div class="search-wrapper">
-                    <input type="text" id="searchInput" placeholder="Suche nach Tags, Namen..." autocomplete="off">
-                </div>
-                <div class="select-group">
-                    <select id="skinFilter">
-                        <option value="all">Alle Skins</option>
-                    </select>
-                    <select id="gameFilter">
-                        <option value="all">Alle Spiele</option>
-                    </select>
-                    <select id="categoryFilter">
-                        <option value="all">Alle Kategorien</option>
-                    </select>
+                <input type="text" id="searchInput" placeholder="Search tags, skins..." autocomplete="off">
+                <!-- Filters are now checkboxes for multi-select -->
+                <div id="filter-controls" class="multi-select-group">
+                    <button class="filter-toggle" data-target="game-menu">Games ▾</button>
+                    <div id="game-menu" class="dropdown-menu"></div>
+                    <button class="filter-toggle" data-target="cat-menu">Categories ▾</button>
+                    <div id="cat-menu" class="dropdown-menu"></div>
                 </div>
             </div>
         </div>
     </nav>
 
     <main class="gallery-wrapper">
-        <div id="loading" class="state-message">Archiv wird synchronisiert...</div>
-        <div id="no-results" class="state-message hidden">Keine Medien für diese Filterkombination gefunden.</div>
-        <div id="gallery-container" class="grid-layout hidden"></div>
+        <div id="gallery-container" class="grid-layout"></div>
     </main>
+
+    <!-- Lightbox Overlay -->
+    <div id="lightbox" class="lightbox hidden">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Full view">
+        <a id="original-link" href="" target="_blank" class="view-original">View Original</a>
+    </div>
 
     <script src="script.js" type="module"></script>
 </body>

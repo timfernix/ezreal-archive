@@ -1,4 +1,4 @@
-const API_URL = '/api/skins'; // Relativer Pfad durch Cloudflare Route
+const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 
 // DOM Elements
@@ -11,6 +11,10 @@ const gameFilter = document.getElementById('gameFilter');
 const categoryFilter = document.getElementById('categoryFilter');
 
 let allMediaItems = [];
+let activeFilters = {
+    games: [],
+    categories: []
+};
 
 async function init() {
     try {
@@ -21,27 +25,64 @@ async function init() {
             skin.media.forEach(asset => {
                 allMediaItems.push({
                     skinName: skin.skinName,
-                    skinCodename: skin.skinCodename,
                     type: asset.type,
                     url: asset.url,
-                    category: asset.category || 'Unkategorisiert',
-                    game: asset.game || 'Generisch',
+                    category: asset.category || 'Uncategorized',
+                    game: asset.game || 'Generic',
                     tags: asset.tags || [],
                     searchString: `${skin.skinName} ${asset.category} ${asset.game} ${asset.tags.join(' ')}`.toLowerCase()
                 });
             });
         });
 
-        populateDropdowns();
-        setupEventListeners();
-        renderGallery(allMediaItems);
+        // Initialize UI
+        createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))], 'games');
+        createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))], 'categories');
+        
+        // Event Listeners for search and toggles
+        searchInput.addEventListener('input', applyFilters);
+        document.querySelectorAll('.filter-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.getElementById(e.target.dataset.target).classList.toggle('show');
+            });
+        });
 
+        renderGallery(allMediaItems);
         loadingIndicator.classList.add('hidden');
-        container.classList.remove('hidden');
     } catch (error) {
         console.error('API Error:', error);
-        loadingIndicator.textContent = 'Fehler beim Laden der Datenbank-Ressourcen.';
     }
+}
+
+function createCheckboxes(menuId, options, filterType) {
+    const menu = document.getElementById(menuId);
+    options.forEach(opt => {
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" value="${opt}"> ${opt}`;
+        label.querySelector('input').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                activeFilters[filterType].push(opt);
+            } else {
+                activeFilters[filterType] = activeFilters[filterType].filter(item => item !== opt);
+            }
+            applyFilters();
+        });
+        menu.appendChild(label);
+    });
+}
+
+function applyFilters() {
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    const filtered = allMediaItems.filter(item => {
+        const matchesSearch = item.searchString.includes(searchTerm);
+        const matchesGame = activeFilters.games.length === 0 || activeFilters.games.includes(item.game);
+        const matchesCat = activeFilters.categories.length === 0 || activeFilters.categories.includes(item.category);
+        
+        return matchesSearch && matchesGame && matchesCat;
+    });
+
+    renderGallery(filtered);
 }
 
 function populateDropdowns() {
@@ -63,31 +104,6 @@ function populateDropdowns() {
     createOptions(uniqueSkins, skinFilter);
     createOptions(uniqueGames, gameFilter);
     createOptions(uniqueCategories, categoryFilter);
-}
-
-function setupEventListeners() {
-    const filterData = () => {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedSkin = skinFilter.value;
-        const selectedGame = gameFilter.value;
-        const selectedCat = categoryFilter.value;
-
-        const filtered = allMediaItems.filter(item => {
-            const matchesSearch = item.searchString.includes(searchTerm);
-            const matchesSkin = selectedSkin === 'all' || item.skinName === selectedSkin;
-            const matchesGame = selectedGame === 'all' || item.game === selectedGame;
-            const matchesCat = selectedCat === 'all' || item.category === selectedCat;
-
-            return matchesSearch && matchesSkin && matchesGame && matchesCat;
-        });
-
-        renderGallery(filtered);
-    };
-
-    searchInput.addEventListener('input', filterData);
-    skinFilter.addEventListener('change', filterData);
-    gameFilter.addEventListener('change', filterData);
-    categoryFilter.addEventListener('change', filterData);
 }
 
 function renderGallery(items) {
