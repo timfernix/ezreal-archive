@@ -228,6 +228,32 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     overflow-y: auto;
 }
 
+.close-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1010;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.close-btn:hover {
+    transform: scale(1.05);
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(56, 189, 248, 0.6);
+}
+
 .lightbox-content {
     display: flex;
     gap: 2rem;
@@ -362,6 +388,14 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     .lightbox {
         padding: 1rem;
     }
+
+    .close-btn {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 40px;
+        height: 40px;
+        font-size: 1.4rem;
+    }
     
     .lightbox-content {
         flex-direction: column;
@@ -391,6 +425,14 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 
 @media (max-width: 480px) {
+    .close-btn {
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+    }
+
     .lightbox-info {
         padding: 1rem;
     }
