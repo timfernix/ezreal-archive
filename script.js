@@ -119,9 +119,11 @@ function renderGallery(items) {
         const card = document.createElement('div');
         card.className = 'card';
 
-        // Media Element (Bild oder Video)
+        // Media Element (Image or Video)
         const mediaWrapper = document.createElement('div');
         mediaWrapper.className = 'card-media';
+        mediaWrapper.style.cursor = 'pointer';
+        mediaWrapper.addEventListener('click', () => openLightbox(item));
         
         if (item.type === 'video') {
             const video = document.createElement('video');
@@ -152,7 +154,7 @@ function renderGallery(items) {
         title.textContent = item.skinName;
         const game = document.createElement('div');
         game.className = 'card-game';
-        game.textContent = item.game !== 'Generisch' ? item.game : '';
+        game.textContent = item.game !== 'Generic' ? item.game : '';
         
         textWrapper.appendChild(title);
         textWrapper.appendChild(game);

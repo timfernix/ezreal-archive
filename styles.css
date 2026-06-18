@@ -62,22 +62,12 @@ body {
     color: var(--accent);
     letter-spacing: -0.05em;
     cursor: pointer;
+    transition: color 0.2s ease;
 }
 
-.brand-name::before, .brand-name::after {
-    content: '';
-    position: absolute;
-    top: -6px;
-    width: 0; height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 12px solid var(--accent);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.brand-name:hover {
+    color: #7dd3fc;
 }
-.brand-name::before { left: 10%; transform-origin: bottom right; }
-.brand-name::after { right: 10%; transform-origin: bottom left; }
-.brand-name:hover::before { transform: rotate(-20deg) scale(1.1); }
-.brand-name:hover::after { transform: rotate(20deg) scale(1.1); }
 
 .brand-subtitle { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.2em; }
 
