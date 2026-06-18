@@ -31,21 +31,32 @@ function deriveSkinlineFromName(skinName) {
     return withoutChampionName || normalizedName;
 }
 
+function resolveSkinName(skin) {
+    return normalizeValue(skin.name) || 'Unknown Skin';
+}
+
 function resolveSkinline(skin) {
-    return normalizeValue(skin.skinline)
-        || normalizeValue(skin.skinLine)
-        || normalizeValue(skin.skin_line)
-        || deriveSkinlineFromName(skin.skinName);
+    return deriveSkinlineFromName(resolveSkinName(skin));
 }
 
 function resolveReleaseYear(skin, asset) {
-    return normalizeValue(asset.releaseYear)
-        || normalizeValue(asset.releaseyear)
-        || normalizeValue(asset.year)
-        || normalizeValue(skin.releaseYear)
-        || normalizeValue(skin.releaseyear)
-        || normalizeValue(skin.year)
-        || 'Unknown';
+    const assetReleaseYear = normalizeValue(asset.asset_release_year);
+    const skinReleaseYear = normalizeValue(skin.release_year);
+
+    if (assetReleaseYear !== undefined && assetReleaseYear !== null && assetReleaseYear !== '') {
+        return String(assetReleaseYear);
+    }
+
+    if (skinReleaseYear !== undefined && skinReleaseYear !== null && skinReleaseYear !== '') {
+        return String(skinReleaseYear);
+    }
+
+    return 'Unknown';
+}
+
+function getSortableReleaseYear(value) {
+    const numericYear = Number.parseInt(value, 10);
+    return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
 }
 
 // Close Lightbox Events
@@ -116,18 +127,22 @@ async function init() {
             skin.media.forEach(asset => {
                 // Safely handle tags, even if the database returns null/undefined
                 const safeTags = asset.tags ? asset.tags.filter(Boolean) : [];
+                const skinName = resolveSkinName(skin);
+                const skinline = resolveSkinline(skin);
+                const releaseYear = resolveReleaseYear(skin, asset);
 
                 allMediaItems.push({
-                    skinName: skin.skinName,
+                    skinName,
+                    description: normalizeValue(skin.description) || '',
                     type: asset.type,
-                    url: asset.url,
+                    url: asset.r2_key,
                     category: asset.category || 'Uncategorized',
                     game: asset.game || 'Generic',
-                    skinline: resolveSkinline(skin),
-                    releaseYear: resolveReleaseYear(skin, asset),
+                    skinline,
+                    releaseYear,
                     tags: safeTags,
                     // Use safeTags here so .join() never crashes
-                    searchString: `${skin.skinName} ${resolveSkinline(skin)} ${asset.category || ''} ${asset.game || ''} ${resolveReleaseYear(skin, asset)} ${safeTags.join(' ')}`.toLowerCase()
+                    searchString: `${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${releaseYear} ${safeTags.join(' ')}`.toLowerCase()
                 });
             });
         });
@@ -204,9 +219,15 @@ function sortItems(items, sortType) {
             sorted.sort((a, b) => a.skinline.localeCompare(b.skinline));
             break;
         case 'newest':
-            // If your data has a date/timestamp, sort by that
-            // For now, we'll reverse the original order
-            sorted.reverse();
+            sorted.sort((a, b) => {
+                const yearDifference = getSortableReleaseYear(b.releaseYear) - getSortableReleaseYear(a.releaseYear);
+
+                if (yearDifference !== 0) {
+                    return yearDifference;
+                }
+
+                return a.skinName.localeCompare(b.skinName);
+            });
             break;
         case 'none':
         default:
