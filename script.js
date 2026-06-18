@@ -64,6 +64,7 @@ async function init() {
         });
 
         renderGallery(allMediaItems);
+        loadingIndicator.classList.add('hidden');
     } catch (error) {
         console.error('API Error:', error);
     }
