@@ -4,9 +4,27 @@ const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 let allMediaItems = [];
 let activeFilters = { games: [], categories: [] };
 
-// DOM Elements (at the top)
+// DOM Elements
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
+const noResultsIndicator = document.getElementById('no-results'); // Restored this variable
+
+// Lightbox Elements
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const originalLink = document.getElementById('original-link');
+
+// Close Lightbox Events
+document.querySelector('.close-btn').addEventListener('click', () => lightbox.classList.add('hidden'));
+lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) lightbox.classList.add('hidden'); // Close when clicking background
+});
+
+function openLightbox(item) {
+    lightboxImg.src = `${ASSETS_BASE_URL}${item.url}`;
+    originalLink.href = `${ASSETS_BASE_URL}${item.url}`;
+    lightbox.classList.remove('hidden');
+}
 
 // 2. MAIN INITIALIZATION
 async function init() {

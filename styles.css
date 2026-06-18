@@ -203,9 +203,66 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 .lightbox img { max-width: 90%; max-height: 80vh; border-radius: 8px; }
 .view-original { margin-top: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
 
-/* Multi-select Dropdown styling */
-.dropdown-menu {
-    position: absolute; background: var(--bg-card); border: 1px solid var(--border-light);
-    padding: 10px; border-radius: 8px; display: none; z-index: 10;
+/* Filter Toggle Buttons & Container */
+.multi-select-group {
+    display: flex;
+    gap: 1rem;
+    position: relative; /* Critical: Allows the dropdown to position correctly below the button */
 }
-.dropdown-menu.show { display: block; }
+
+.filter-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.filter-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+}
+
+/* Dropdown Menu & Checkboxes */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    z-index: 10;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    max-height: 400px;
+    overflow-y: auto; /* Adds scrolling if the list gets too long */
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu label {
+    display: block;
+    padding: 0.6rem;
+    cursor: pointer;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.dropdown-menu label:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-menu input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
