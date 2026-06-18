@@ -305,6 +305,7 @@ function renderGallery(items) {
         header.className = 'card-header';
         
         const textWrapper = document.createElement('div');
+        textWrapper.className = 'card-text-wrap';
         const title = document.createElement('h3');
         title.className = 'card-title';
         title.textContent = item.title;
