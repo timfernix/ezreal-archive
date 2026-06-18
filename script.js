@@ -39,6 +39,22 @@ function resolveSkinline(skin) {
     return deriveSkinlineFromName(resolveSkinName(skin));
 }
 
+function resolveAssetTitle(asset, skinName) {
+    const explicitTitle = normalizeValue(asset.title);
+
+    if (explicitTitle) {
+        return explicitTitle;
+    }
+
+    const fallbackFromUrl = normalizeValue(asset.url);
+
+    if (fallbackFromUrl) {
+        return fallbackFromUrl;
+    }
+
+    return skinName;
+}
+
 function resolveReleaseYear(skin, asset) {
     const assetReleaseYear = normalizeValue(asset.assetReleaseYear);
     const skinReleaseYear = normalizeValue(skin.releaseYear);
@@ -70,11 +86,15 @@ function openLightbox(item) {
     originalLink.href = `${ASSETS_BASE_URL}${item.url}`;
     
     // Populate lightbox info
-    document.getElementById('lightbox-title').textContent = item.skinName;
+    document.getElementById('lightbox-title').textContent = item.title;
     
     // Create details section
     const detailsDiv = document.getElementById('lightbox-details');
     detailsDiv.innerHTML = `
+        <div class="detail-item">
+            <span class="detail-label">Skin:</span>
+            <span class="detail-value">${item.skinName}</span>
+        </div>
         <div class="detail-item">
             <span class="detail-label">Skinline:</span>
             <span class="detail-value">${item.skinline}</span>
@@ -128,10 +148,12 @@ async function init() {
                 // Safely handle tags, even if the database returns null/undefined
                 const safeTags = asset.tags ? asset.tags.filter(Boolean) : [];
                 const skinName = resolveSkinName(skin);
+                const title = resolveAssetTitle(asset, skinName);
                 const skinline = resolveSkinline(skin);
                 const releaseYear = resolveReleaseYear(skin, asset);
 
                 allMediaItems.push({
+                    title,
                     skinName,
                     description: normalizeValue(skin.description) || '',
                     type: asset.type,
@@ -142,7 +164,7 @@ async function init() {
                     releaseYear,
                     tags: safeTags,
                     // Use safeTags here so .join() never crashes
-                    searchString: `${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${releaseYear} ${safeTags.join(' ')}`.toLowerCase()
+                    searchString: `${title} ${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${releaseYear} ${safeTags.join(' ')}`.toLowerCase()
                 });
             });
         });
@@ -213,7 +235,7 @@ function sortItems(items, sortType) {
     
     switch(sortType) {
         case 'name-asc':
-            sorted.sort((a, b) => a.skinName.localeCompare(b.skinName));
+            sorted.sort((a, b) => a.title.localeCompare(b.title));
             break;
         case 'skinline-asc':
             sorted.sort((a, b) => a.skinline.localeCompare(b.skinline));
@@ -226,7 +248,7 @@ function sortItems(items, sortType) {
                     return yearDifference;
                 }
 
-                return a.skinName.localeCompare(b.skinName);
+                return a.title.localeCompare(b.title);
             });
             break;
         case 'none':
@@ -270,7 +292,7 @@ function renderGallery(items) {
         } else {
             const img = document.createElement('img');
             img.src = `${ASSETS_BASE_URL}${item.url}`;
-            img.alt = item.skinName;
+            img.alt = item.title;
             img.loading = 'lazy';
             mediaWrapper.appendChild(img);
         }
@@ -285,7 +307,7 @@ function renderGallery(items) {
         const textWrapper = document.createElement('div');
         const title = document.createElement('h3');
         title.className = 'card-title';
-        title.textContent = item.skinName;
+        title.textContent = item.title;
         const game = document.createElement('div');
         game.className = 'card-game';
         game.textContent = item.game !== 'Generic' ? item.game : '';
