@@ -16,6 +16,38 @@ const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const originalLink = document.getElementById('original-link');
 
+function normalizeValue(value) {
+    return typeof value === 'string' ? value.trim() : value;
+}
+
+function deriveSkinlineFromName(skinName) {
+    const normalizedName = normalizeValue(skinName);
+
+    if (!normalizedName) {
+        return 'No Skinline';
+    }
+
+    const withoutChampionName = normalizedName.replace(/\s+ezreal\s*$/i, '').trim();
+    return withoutChampionName || normalizedName;
+}
+
+function resolveSkinline(skin) {
+    return normalizeValue(skin.skinline)
+        || normalizeValue(skin.skinLine)
+        || normalizeValue(skin.skin_line)
+        || deriveSkinlineFromName(skin.skinName);
+}
+
+function resolveReleaseYear(skin, asset) {
+    return normalizeValue(asset.releaseYear)
+        || normalizeValue(asset.releaseyear)
+        || normalizeValue(asset.year)
+        || normalizeValue(skin.releaseYear)
+        || normalizeValue(skin.releaseyear)
+        || normalizeValue(skin.year)
+        || 'Unknown';
+}
+
 // Close Lightbox Events
 document.querySelector('.close-btn').addEventListener('click', () => lightbox.classList.add('hidden'));
 lightbox.addEventListener('click', (e) => {
@@ -43,6 +75,10 @@ function openLightbox(item) {
         <div class="detail-item">
             <span class="detail-label">Category:</span>
             <span class="detail-value">${item.category}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Release Year:</span>
+            <span class="detail-value">${item.releaseYear}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Type:</span>
@@ -87,10 +123,11 @@ async function init() {
                     url: asset.url,
                     category: asset.category || 'Uncategorized',
                     game: asset.game || 'Generic',
-                    skinline: skin.skinline || 'No Skinline',
+                    skinline: resolveSkinline(skin),
+                    releaseYear: resolveReleaseYear(skin, asset),
                     tags: safeTags,
                     // Use safeTags here so .join() never crashes
-                    searchString: `${skin.skinName} ${asset.category || ''} ${asset.game || ''} ${safeTags.join(' ')}`.toLowerCase()
+                    searchString: `${skin.skinName} ${resolveSkinline(skin)} ${asset.category || ''} ${asset.game || ''} ${resolveReleaseYear(skin, asset)} ${safeTags.join(' ')}`.toLowerCase()
                 });
             });
         });
