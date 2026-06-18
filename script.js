@@ -7,7 +7,8 @@ let activeFilters = { games: [], categories: [] };
 // DOM Elements
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
-const noResultsIndicator = document.getElementById('no-results'); // Restored this variable
+const noResultsIndicator = document.getElementById('no-results');
+const loadingIndicator = document.getElementById('loading'); // Make sure this is here!
 
 // Lightbox Elements
 const lightbox = document.getElementById('lightbox');
@@ -26,7 +27,6 @@ function openLightbox(item) {
     lightbox.classList.remove('hidden');
 }
 
-// 2. MAIN INITIALIZATION
 // 2. MAIN INITIALIZATION
 async function init() {
     try {
