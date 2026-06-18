@@ -4,11 +4,11 @@ const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 let allMediaItems = [];
 let activeFilters = { games: [], categories: [] };
 
-// DOM Elements
+// DOM Elements (at the top)
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
 const noResultsIndicator = document.getElementById('no-results');
-const loadingIndicator = document.getElementById('loading'); // Make sure this is here!
+const loadingIndicator = document.getElementById('loading');
 
 // Lightbox Elements
 const lightbox = document.getElementById('lightbox');
@@ -18,7 +18,7 @@ const originalLink = document.getElementById('original-link');
 // Close Lightbox Events
 document.querySelector('.close-btn').addEventListener('click', () => lightbox.classList.add('hidden'));
 lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) lightbox.classList.add('hidden'); // Close when clicking background
+    if (e.target === lightbox) lightbox.classList.add('hidden');
 });
 
 function openLightbox(item) {
