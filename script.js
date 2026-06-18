@@ -25,6 +25,48 @@ lightbox.addEventListener('click', (e) => {
 function openLightbox(item) {
     lightboxImg.src = `${ASSETS_BASE_URL}${item.url}`;
     originalLink.href = `${ASSETS_BASE_URL}${item.url}`;
+    
+    // Populate lightbox info
+    document.getElementById('lightbox-title').textContent = item.skinName;
+    
+    // Create details section
+    const detailsDiv = document.getElementById('lightbox-details');
+    detailsDiv.innerHTML = `
+        <div class="detail-item">
+            <span class="detail-label">Skinline:</span>
+            <span class="detail-value">${item.skinline}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Game:</span>
+            <span class="detail-value">${item.game !== 'Generic' ? item.game : 'N/A'}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Category:</span>
+            <span class="detail-value">${item.category}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Type:</span>
+            <span class="detail-value">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
+        </div>
+    `;
+    
+    // Populate tags
+    const tagsDiv = document.getElementById('lightbox-tags');
+    if (item.tags.length > 0) {
+        tagsDiv.innerHTML = '<div class="tags-label">Tags:</div>';
+        const tagContainer = document.createElement('div');
+        tagContainer.className = 'lightbox-tags';
+        item.tags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'lightbox-tag';
+            tagSpan.textContent = tag;
+            tagContainer.appendChild(tagSpan);
+        });
+        tagsDiv.appendChild(tagContainer);
+    } else {
+        tagsDiv.innerHTML = '';
+    }
+    
     lightbox.classList.remove('hidden');
 }
 

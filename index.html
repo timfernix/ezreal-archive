@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ezreal Media Archive - A collection of all official Ezreal media from League of Legends">
+    <meta name="keywords" content="Ezreal, League of Legends, Skins, Archive, Media">
+    <meta name="author" content="Ezreal Archive">
+    <meta name="theme-color" content="#38bdf8">
+    <meta property="og:title" content="Ezreal Media Archive">
+    <meta property="og:description" content="Browse and explore all official Ezreal media content">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="https://assets.timfernix.dev/base/Base_Ezreal_Current_Icon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="https://assets.timfernix.dev/base/Base_Ezreal_Current_Icon.png" />
     <title>Ezreal Media Archive</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -50,8 +59,17 @@
     <!-- Lightbox Overlay -->
     <div id="lightbox" class="lightbox hidden">
         <span class="close-btn">&times;</span>
-        <img id="lightbox-img" src="" alt="Full view">
-        <a id="original-link" href="" target="_blank" class="view-original">View Original</a>
+        <div class="lightbox-content">
+            <div class="lightbox-media">
+                <img id="lightbox-img" src="" alt="Full view">
+            </div>
+            <div class="lightbox-info">
+                <h2 id="lightbox-title" class="lightbox-title"></h2>
+                <div id="lightbox-details" class="lightbox-details"></div>
+                <div id="lightbox-tags" class="lightbox-tags-container"></div>
+                <a id="original-link" href="" target="_blank" class="view-original-btn">View Original</a>
+            </div>
+        </div>
     </div>
 
     <script src="script.js" type="module"></script>
