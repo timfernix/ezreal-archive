@@ -35,23 +35,16 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-light);
-    padding: 1.5rem 0;
+    padding: 1.5rem 0 0 0;
 }
 
 .nav-content {
     max-width: 1600px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 2rem 1.5rem 2rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
     align-items: center;
-    justify-content: space-between;
-}
-
-.brand-container {
-    display: flex;
-    flex-direction: column;
+    justify-content: center;
 }
 
 .brand-name {
@@ -69,15 +62,38 @@ body {
     color: #7dd3fc;
 }
 
-.brand-subtitle { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.2em; }
+.filter-section {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    width: 100%;
+}
 
-/* Filter Controls */
-.filter-bar {
-    display: flex;
+.search-box {
+    margin-bottom: 1.5rem;
+}
+
+.search-box input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
-    flex-grow: 1;
-    max-width: 800px;
-    flex-wrap: wrap;
 }
 
 .search-wrapper { flex-grow: 1; min-width: 200px; }
@@ -178,11 +194,30 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
-    .nav-content { flex-direction: column; align-items: stretch; gap: 1rem; }
-    .filter-bar { max-width: 100%; }
-    .select-group select { width: 100%; }
+    .nav-content { 
+        padding: 0 1rem 1rem 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .filter-section {
+        padding: 1rem;
+    }
+    
+    .search-box {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-controls {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
     .gallery-wrapper { padding: 0 1rem; }
     .grid-layout { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    
+    .dropdown-menu {
+        min-width: 150px;
+    }
 }
 
 .lightbox {
@@ -194,26 +229,62 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 .view-original { margin-top: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
 
 /* Filter Toggle Buttons & Container */
-.multi-select-group {
-    display: flex;
-    gap: 1rem;
-    position: relative; /* Critical: Allows the dropdown to position correctly below the button */
+.filter-group {
+    position: relative;
 }
 
 .filter-toggle {
+    width: 100%;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-light);
     color: var(--text-main);
-    padding: 0.8rem 1rem;
+    padding: 0.9rem 1.1rem;
     border-radius: 8px;
     font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .filter-toggle:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: var(--accent);
+    color: var(--accent);
+}
+
+.sort-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%2264748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem top 50%;
+    background-size: 0.6rem auto;
+    padding-right: 2.2rem;
+}
+
+.sort-select:hover {
+    border-color: var(--accent);
+}
+
+.sort-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.sort-select option { 
+    background-color: var(--bg-card); 
+    color: var(--text-main); 
 }
 
 /* Dropdown Menu & Checkboxes */
@@ -221,17 +292,19 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     position: absolute;
     top: 100%;
     left: 0;
-    margin-top: 0.5rem;
+    margin-top: 0.6rem;
     background: var(--bg-card);
     border: 1px solid var(--border-light);
-    padding: 10px;
+    padding: 0.8rem;
     border-radius: 8px;
     display: none;
     z-index: 10;
-    min-width: 220px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    max-height: 400px;
-    overflow-y: auto; /* Adds scrolling if the list gets too long */
+    min-width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    max-height: 350px;
+    overflow-y: auto;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .dropdown-menu.show {
@@ -239,20 +312,37 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 
 .dropdown-menu label {
-    display: block;
-    padding: 0.6rem;
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 0.6rem;
     cursor: pointer;
     color: var(--text-main);
     font-size: 0.85rem;
-    border-radius: 4px;
-    transition: background 0.2s;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
 .dropdown-menu label:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accent);
+}
+
+/* Extra small devices */
+@media (max-width: 600px) {
+    .filter-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .brand-name {
+        font-size: 1.5rem;
+    }
 }
 
 .dropdown-menu input[type="checkbox"] {
-    margin-right: 8px;
+    margin-right: 0.7rem;
     cursor: pointer;
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
 }

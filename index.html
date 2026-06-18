@@ -10,14 +10,31 @@
     <nav class="glass-nav">
         <div class="nav-content">
             <h1 class="brand-name">Ezreal Media Archive</h1>
-            <div class="filter-bar">
+        </div>
+        <div class="filter-section">
+            <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Search tags, skins..." autocomplete="off">
-                <!-- Filters are now checkboxes for multi-select -->
-                <div id="filter-controls" class="multi-select-group">
-                    <button class="filter-toggle" data-target="game-menu">Games ▾</button>
-                    <div id="game-menu" class="dropdown-menu"></div>
+            </div>
+            <div id="filter-controls" class="filter-controls">
+                <div class="filter-group">
+                    <button class="filter-toggle" data-target="skinline-menu">Skinlines ▾</button>
+                    <div id="skinline-menu" class="dropdown-menu"></div>
+                </div>
+                <div class="filter-group">
                     <button class="filter-toggle" data-target="cat-menu">Categories ▾</button>
                     <div id="cat-menu" class="dropdown-menu"></div>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-toggle" data-target="game-menu">Games ▾</button>
+                    <div id="game-menu" class="dropdown-menu"></div>
+                </div>
+                <div class="filter-group">
+                    <select id="sortSelect" class="sort-select">
+                        <option value="none">Sort by...</option>
+                        <option value="name-asc">Skin Name (A-Z)</option>
+                        <option value="skinline-asc">Skinline (A-Z)</option>
+                        <option value="newest">Newest First</option>
+                    </select>
                 </div>
             </div>
         </div>

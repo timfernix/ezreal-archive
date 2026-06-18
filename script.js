@@ -2,7 +2,8 @@
 const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 let allMediaItems = [];
-let activeFilters = { games: [], categories: [] };
+let activeFilters = { skinlines: [], categories: [], games: [] };
+let currentSort = 'none';
 
 // DOM Elements (at the top)
 const container = document.getElementById('gallery-container');
@@ -44,6 +45,7 @@ async function init() {
                     url: asset.url,
                     category: asset.category || 'Uncategorized',
                     game: asset.game || 'Generic',
+                    skinline: skin.skinline || 'No Skinline',
                     tags: safeTags,
                     // Use safeTags here so .join() never crashes
                     searchString: `${skin.skinName} ${asset.category || ''} ${asset.game || ''} ${safeTags.join(' ')}`.toLowerCase()
@@ -51,12 +53,17 @@ async function init() {
             });
         });
 
-        // Initialize UI components
-        createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))], 'games');
-        createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))], 'categories');
+        // Initialize UI components - Order: Skinlines, Categories, Games
+        createCheckboxes('skinline-menu', [...new Set(allMediaItems.map(m => m.skinline))].sort(), 'skinlines');
+        createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))].sort(), 'categories');
+        createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))].sort(), 'games');
         
         // Setup general listeners
         searchInput.addEventListener('input', applyFilters);
+        document.getElementById('sortSelect').addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            applyFilters();
+        });
         document.querySelectorAll('.filter-toggle').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.getElementById(e.target.dataset.target).classList.toggle('show');
@@ -92,15 +99,42 @@ function createCheckboxes(menuId, options, filterType) {
 function applyFilters() {
     const searchTerm = searchInput.value.toLowerCase();
     
-    const filtered = allMediaItems.filter(item => {
+    let filtered = allMediaItems.filter(item => {
         const matchesSearch = item.searchString.includes(searchTerm);
+        const matchesSkinline = activeFilters.skinlines.length === 0 || activeFilters.skinlines.includes(item.skinline);
         const matchesGame = activeFilters.games.length === 0 || activeFilters.games.includes(item.game);
         const matchesCat = activeFilters.categories.length === 0 || activeFilters.categories.includes(item.category);
         
-        return matchesSearch && matchesGame && matchesCat;
+        return matchesSearch && matchesSkinline && matchesGame && matchesCat;
     });
 
+    // Apply sorting
+    filtered = sortItems(filtered, currentSort);
+
     renderGallery(filtered);
+}
+
+function sortItems(items, sortType) {
+    const sorted = [...items];
+    
+    switch(sortType) {
+        case 'name-asc':
+            sorted.sort((a, b) => a.skinName.localeCompare(b.skinName));
+            break;
+        case 'skinline-asc':
+            sorted.sort((a, b) => a.skinline.localeCompare(b.skinline));
+            break;
+        case 'newest':
+            // If your data has a date/timestamp, sort by that
+            // For now, we'll reverse the original order
+            sorted.reverse();
+            break;
+        case 'none':
+        default:
+            break;
+    }
+    
+    return sorted;
 }
 
 function renderGallery(items) {
