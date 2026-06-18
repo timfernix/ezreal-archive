@@ -32,7 +32,7 @@ function deriveSkinlineFromName(skinName) {
 }
 
 function resolveSkinName(skin) {
-    return normalizeValue(skin.name) || 'Unknown Skin';
+    return normalizeValue(skin.skinName) || 'Unknown Skin';
 }
 
 function resolveSkinline(skin) {
@@ -40,8 +40,8 @@ function resolveSkinline(skin) {
 }
 
 function resolveReleaseYear(skin, asset) {
-    const assetReleaseYear = normalizeValue(asset.asset_release_year);
-    const skinReleaseYear = normalizeValue(skin.release_year);
+    const assetReleaseYear = normalizeValue(asset.assetReleaseYear);
+    const skinReleaseYear = normalizeValue(skin.releaseYear);
 
     if (assetReleaseYear !== undefined && assetReleaseYear !== null && assetReleaseYear !== '') {
         return String(assetReleaseYear);
@@ -135,7 +135,7 @@ async function init() {
                     skinName,
                     description: normalizeValue(skin.description) || '',
                     type: asset.type,
-                    url: asset.r2_key,
+                    url: asset.url,
                     category: asset.category || 'Uncategorized',
                     game: asset.game || 'Generic',
                     skinline,
