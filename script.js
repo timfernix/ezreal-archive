@@ -27,6 +27,7 @@ function openLightbox(item) {
 }
 
 // 2. MAIN INITIALIZATION
+// 2. MAIN INITIALIZATION
 async function init() {
     try {
         const response = await fetch(API_URL);
@@ -34,14 +35,18 @@ async function init() {
         
         data.forEach(skin => {
             skin.media.forEach(asset => {
+                // Safely handle tags, even if the database returns null/undefined
+                const safeTags = asset.tags ? asset.tags.filter(Boolean) : [];
+
                 allMediaItems.push({
                     skinName: skin.skinName,
                     type: asset.type,
                     url: asset.url,
                     category: asset.category || 'Uncategorized',
                     game: asset.game || 'Generic',
-                    tags: asset.tags || [],
-                    searchString: `${skin.skinName} ${asset.category} ${asset.game} ${asset.tags.join(' ')}`.toLowerCase()
+                    tags: safeTags,
+                    // Use safeTags here so .join() never crashes
+                    searchString: `${skin.skinName} ${asset.category || ''} ${asset.game || ''} ${safeTags.join(' ')}`.toLowerCase()
                 });
             });
         });
