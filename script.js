@@ -10,6 +10,7 @@ const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
 const noResultsIndicator = document.getElementById('no-results');
 const loadingIndicator = document.getElementById('loading');
+const archiveMeta = document.getElementById('archive-meta');
 
 // Lightbox Elements
 const lightbox = document.getElementById('lightbox');
@@ -73,6 +74,43 @@ function resolveReleaseYear(skin, asset) {
 function getSortableReleaseYear(value) {
     const numericYear = Number.parseInt(value, 10);
     return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
+}
+
+function getNewestItem(items) {
+    if (!items.length) {
+        return null;
+    }
+
+    return [...items].sort((a, b) => {
+        const yearDifference = getSortableReleaseYear(b.releaseYear) - getSortableReleaseYear(a.releaseYear);
+
+        if (yearDifference !== 0) {
+            return yearDifference;
+        }
+
+        return a.title.localeCompare(b.title);
+    })[0];
+}
+
+function updateArchiveMeta(items) {
+    if (!archiveMeta) {
+        return;
+    }
+
+    const syncedAt = new Date().toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+    });
+
+    const newest = getNewestItem(items);
+
+    if (!newest) {
+        archiveMeta.textContent = `Last synced: ${syncedAt} | Newest archive item: -`;
+        return;
+    }
+
+    archiveMeta.textContent = `Last synced: ${syncedAt} | Newest archive item: ${newest.title} (${newest.releaseYear})`;
 }
 
 // Close Lightbox Events
@@ -173,6 +211,7 @@ async function init() {
         createCheckboxes('skinline-menu', [...new Set(allMediaItems.map(m => m.skinline))].sort(), 'skinlines');
         createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))].sort(), 'categories');
         createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))].sort(), 'games');
+        updateArchiveMeta(allMediaItems);
         
         // Setup general listeners
         searchInput.addEventListener('input', applyFilters);
