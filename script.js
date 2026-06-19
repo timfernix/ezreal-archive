@@ -108,7 +108,7 @@ function updateArchiveMeta(items) {
         return;
     }
 
-    archiveMeta.textContent = `Last synced: ${syncedAt} | Newest archive item: ${newest.title} (${newest.releaseYear}) | Total items: ${totalItems}`;
+    archiveMeta.textContent = `Synced: ${syncedAt} | Newest item: ${newest.title} (${newest.releaseYear}) | Total: ${totalItems}`;
 }
 
 // Close Lightbox Events
