@@ -20,13 +20,11 @@ body {
     min-height: 100vh;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* Navigation & Filter (Glassmorphism) */
 .glass-nav {
     position: sticky;
     top: 0;
@@ -163,7 +161,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 .select-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .select-group select { width: auto; flex-grow: 1; }
 
-/* Main Gallery */
 .gallery-wrapper { max-width: 1600px; margin: 2rem auto; padding: 0 2rem; }
 
 .grid-layout {
@@ -175,7 +172,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 .state-message { text-align: center; color: var(--text-muted); margin-top: 4rem; font-size: 1.1rem; }
 .hidden { display: none !important; }
 
-/* Media Cards */
 .card {
     background: var(--bg-card);
     border: 1px solid var(--border-light);
@@ -241,7 +237,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 .tag { font-size: 0.75rem; color: #94a3b8; }
 .tag::before { content: '#'; color: var(--accent); opacity: 0.7; }
 
-/* Mobile Optimizations */
 @media (max-width: 768px) {
     .nav-content { 
         padding: 0 1rem 1rem 1rem;
@@ -440,7 +435,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     box-shadow: 0 8px 16px rgba(56, 189, 248, 0.3);
 }
 
-/* Mobile Lightbox Adjustments */
 @media (max-width: 768px) {
     .lightbox {
         padding: 1rem;
@@ -503,7 +497,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     }
 }
 
-/* Filter Toggle Buttons & Container */
 .filter-group {
     position: relative;
 }
@@ -562,7 +555,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     color: var(--text-main); 
 }
 
-/* Dropdown Menu & Checkboxes */
 .dropdown-menu {
     position: absolute;
     top: 100%;
@@ -603,7 +595,6 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     color: var(--accent);
 }
 
-/* Extra small devices */
 @media (max-width: 600px) {
     .filter-controls {
         grid-template-columns: 1fr;

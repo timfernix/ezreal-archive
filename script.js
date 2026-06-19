@@ -1,18 +1,15 @@
-// 1. GLOBAL VARIABLES & CONFIG
 const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
 let currentSort = 'none';
 
-// DOM Elements (at the top)
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
 const noResultsIndicator = document.getElementById('no-results');
 const loadingIndicator = document.getElementById('loading');
 const archiveMeta = document.getElementById('archive-meta');
 
-// Lightbox Elements
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const originalLink = document.getElementById('original-link');
@@ -97,7 +94,7 @@ function updateArchiveMeta(items) {
         return;
     }
 
-    const syncedAt = new Date().toLocaleDateString(undefined, {
+    const syncedAt = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: '2-digit'
@@ -123,7 +120,6 @@ function openLightbox(item) {
     lightboxImg.src = `${ASSETS_BASE_URL}${item.url}`;
     originalLink.href = `${ASSETS_BASE_URL}${item.url}`;
     
-    // Populate lightbox info
     document.getElementById('lightbox-title').textContent = item.title;
     
     // Create details section
@@ -155,7 +151,6 @@ function openLightbox(item) {
         </div>
     `;
     
-    // Populate tags
     const tagsDiv = document.getElementById('lightbox-tags');
     if (item.tags.length > 0) {
         tagsDiv.innerHTML = '<div class="tags-label">Tags:</div>';
@@ -175,7 +170,6 @@ function openLightbox(item) {
     lightbox.classList.remove('hidden');
 }
 
-// 2. MAIN INITIALIZATION
 async function init() {
     try {
         const response = await fetch(API_URL);
@@ -207,13 +201,11 @@ async function init() {
             });
         });
 
-        // Initialize UI components - Order: Skinlines, Categories, Games
         createCheckboxes('skinline-menu', [...new Set(allMediaItems.map(m => m.skinline))].sort(), 'skinlines');
         createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))].sort(), 'categories');
         createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))].sort(), 'games');
         updateArchiveMeta(allMediaItems);
         
-        // Setup general listeners
         searchInput.addEventListener('input', applyFilters);
         document.getElementById('sortSelect').addEventListener('change', (e) => {
             currentSort = e.target.value;
@@ -232,7 +224,6 @@ async function init() {
     }
 }
 
-// 3. HELPER FUNCTIONS (Checkbox Generation)
 function createCheckboxes(menuId, options, filterType) {
     const menu = document.getElementById(menuId);
     options.forEach(opt => {
@@ -250,7 +241,6 @@ function createCheckboxes(menuId, options, filterType) {
     });
 }
 
-// 4. LOGIC FUNCTIONS (Filtering & Rendering)
 function applyFilters() {
     const searchTerm = searchInput.value.toLowerCase();
     
@@ -263,7 +253,6 @@ function applyFilters() {
         return matchesSearch && matchesSkinline && matchesGame && matchesCat;
     });
 
-    // Apply sorting
     filtered = sortItems(filtered, currentSort);
 
     renderGallery(filtered);
@@ -307,14 +296,12 @@ function renderGallery(items) {
     }
     noResultsIndicator.classList.add('hidden');
 
-    // Um DOM-Reflows zu minimieren, DocumentFragment nutzen
     const fragment = document.createDocumentFragment();
 
     items.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card';
 
-        // Media Element (Image or Video)
         const mediaWrapper = document.createElement('div');
         mediaWrapper.className = 'card-media';
         mediaWrapper.style.cursor = 'pointer';
@@ -336,7 +323,6 @@ function renderGallery(items) {
             mediaWrapper.appendChild(img);
         }
 
-        // Info Bereich
         const info = document.createElement('div');
         info.className = 'card-info';
 
@@ -363,7 +349,6 @@ function renderGallery(items) {
         header.appendChild(categoryBadge);
         info.appendChild(header);
 
-        // Tags
         if (item.tags.length > 0) {
             const tagContainer = document.createElement('div');
             tagContainer.className = 'tag-container';
