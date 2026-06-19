@@ -103,7 +103,7 @@ function updateArchiveMeta(items) {
     const newest = getNewestItem(items);
 
     if (!newest) {
-        archiveMeta.textContent = `Last synced: ${syncedAt} | Newest archive item: -`;
+        archiveMeta.textContent = `Last synced: ${syncedAt} | Newest item: -`;
         return;
     }
 
