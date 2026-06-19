@@ -101,13 +101,14 @@ function updateArchiveMeta(items) {
     });
 
     const newest = getNewestItem(items);
+    const totalItems = items.length;
 
     if (!newest) {
-        archiveMeta.textContent = `Last synced: ${syncedAt} | Newest item: -`;
+        archiveMeta.textContent = `Synced: ${syncedAt} | Newest item: - | Total: ${totalItems}`;
         return;
     }
 
-    archiveMeta.textContent = `Last synced: ${syncedAt} | Newest archive item: ${newest.title} (${newest.releaseYear})`;
+    archiveMeta.textContent = `Last synced: ${syncedAt} | Newest archive item: ${newest.title} (${newest.releaseYear}) | Total items: ${totalItems}`;
 }
 
 // Close Lightbox Events
