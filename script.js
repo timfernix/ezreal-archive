@@ -68,6 +68,16 @@ function resolveReleaseYear(skin, asset) {
     return 'Unknown';
 }
 
+function resolveSkinReleaseYear(skin) {
+    const skinReleaseYear = normalizeValue(skin.releaseYear);
+
+    if (skinReleaseYear !== undefined && skinReleaseYear !== null && skinReleaseYear !== '') {
+        return String(skinReleaseYear);
+    }
+
+    return 'Unknown';
+}
+
 function getSortableReleaseYear(value) {
     const numericYear = Number.parseInt(value, 10);
     return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
@@ -131,8 +141,8 @@ function openLightbox(item) {
             <span class="detail-value">${item.skinName}</span>
         </div>
         <div class="detail-item">
-            <span class="detail-label">Skinline:</span>
-            <span class="detail-value">${item.skinline}</span>
+            <span class="detail-label">Skin Release Year:</span>
+            <span class="detail-value">${item.skinReleaseYear}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Game:</span>
@@ -184,6 +194,7 @@ async function init() {
                 const title = resolveAssetTitle(asset, skinName);
                 const skinline = resolveSkinline(skin);
                 const releaseYear = resolveReleaseYear(skin, asset);
+                const skinReleaseYear = resolveSkinReleaseYear(skin);
 
                 allMediaItems.push({
                     title,
@@ -195,9 +206,10 @@ async function init() {
                     game: asset.game || 'Generic',
                     skinline,
                     releaseYear,
+                    skinReleaseYear,
                     tags: safeTags,
                     // Use safeTags here so .join() never crashes
-                    searchString: `${title} ${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${releaseYear} ${safeTags.join(' ')}`.toLowerCase()
+                    searchString: `${title} ${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${releaseYear} ${skinReleaseYear} ${safeTags.join(' ')}`.toLowerCase()
                 });
             });
         });
