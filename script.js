@@ -83,12 +83,23 @@ function getSortableReleaseYear(value) {
     return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
 }
 
+function getSortableAssetId(value) {
+    const numericId = Number.parseInt(value, 10);
+    return Number.isNaN(numericId) ? Number.NEGATIVE_INFINITY : numericId;
+}
+
 function getNewestItem(items) {
     if (!items.length) {
         return null;
     }
 
-    return items[items.length - 1];
+    return items.reduce((newest, current) => {
+        if (!newest) {
+            return current;
+        }
+
+        return getSortableAssetId(current.assetId) > getSortableAssetId(newest.assetId) ? current : newest;
+    }, null);
 }
 
 function updateArchiveMeta(items) {
@@ -189,6 +200,7 @@ async function init() {
                 const skinReleaseYear = resolveSkinReleaseYear(skin);
 
                 allMediaItems.push({
+                    assetId: asset.id,
                     title,
                     skinName,
                     description: normalizeValue(skin.description) || '',
