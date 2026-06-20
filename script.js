@@ -83,25 +83,6 @@ function getSortableReleaseYear(value) {
     return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
 }
 
-function getSortableAssetId(value) {
-    const numericId = Number.parseInt(value, 10);
-    return Number.isNaN(numericId) ? Number.NEGATIVE_INFINITY : numericId;
-}
-
-function getNewestItem(items) {
-    if (!items.length) {
-        return null;
-    }
-
-    return items.reduce((newest, current) => {
-        if (!newest) {
-            return current;
-        }
-
-        return getSortableAssetId(current.assetId) > getSortableAssetId(newest.assetId) ? current : newest;
-    }, null);
-}
-
 function updateArchiveMeta(items) {
     if (!archiveMeta) {
         return;
@@ -113,15 +94,9 @@ function updateArchiveMeta(items) {
         day: '2-digit'
     });
 
-    const newest = getNewestItem(items);
     const totalItems = items.length;
 
-    if (!newest) {
-        archiveMeta.textContent = `Synced: ${syncedAt} | Newest item: - | Total: ${totalItems}`;
-        return;
-    }
-
-    archiveMeta.textContent = `Synced: ${syncedAt} | Newest item: ${newest.title} (${newest.releaseYear}) | Total: ${totalItems}`;
+    archiveMeta.textContent = `Synced: ${syncedAt} | Total: ${totalItems}`;
 }
 
 // Close Lightbox Events
@@ -200,7 +175,6 @@ async function init() {
                 const skinReleaseYear = resolveSkinReleaseYear(skin);
 
                 allMediaItems.push({
-                    assetId: asset.id,
                     title,
                     skinName,
                     description: normalizeValue(skin.description) || '',
