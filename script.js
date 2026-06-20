@@ -153,7 +153,7 @@ function openLightbox(item) {
             <span class="detail-value">${item.category}</span>
         </div>
         <div class="detail-item">
-            <span class="detail-label">Release Year:</span>
+            <span class="detail-label">Asset Release Year:</span>
             <span class="detail-value">${item.releaseYear}</span>
         </div>
         <div class="detail-item">
