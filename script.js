@@ -88,15 +88,7 @@ function getNewestItem(items) {
         return null;
     }
 
-    return [...items].sort((a, b) => {
-        const yearDifference = getSortableReleaseYear(b.releaseYear) - getSortableReleaseYear(a.releaseYear);
-
-        if (yearDifference !== 0) {
-            return yearDifference;
-        }
-
-        return a.title.localeCompare(b.title);
-    })[0];
+    return items[items.length - 1];
 }
 
 function updateArchiveMeta(items) {
