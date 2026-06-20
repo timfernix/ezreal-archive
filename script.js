@@ -2,7 +2,7 @@ const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
-let currentSort = 'none';
+let currentSort = 'newest';
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -218,7 +218,7 @@ async function init() {
             });
         });
 
-        renderGallery(allMediaItems);
+        renderGallery(sortItems(allMediaItems, currentSort));
         loadingIndicator.classList.add('hidden');
     } catch (error) {
         console.error('API Error:', error);
