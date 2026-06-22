@@ -109,7 +109,6 @@ function openLightbox(item) {
     const mediaContainer = document.querySelector('.lightbox-media');
     const assetUrl = `${ASSETS_BASE_URL}${item.url}`;
 
-    // Remove any previously injected video element and restore the img
     let existingVideo = mediaContainer.querySelector('video');
     if (existingVideo) {
         existingVideo.remove();
