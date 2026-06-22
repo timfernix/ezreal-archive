@@ -106,8 +106,33 @@ lightbox.addEventListener('click', (e) => {
 });
 
 function openLightbox(item) {
-    lightboxImg.src = `${ASSETS_BASE_URL}${item.url}`;
-    originalLink.href = `${ASSETS_BASE_URL}${item.url}`;
+    const mediaContainer = document.querySelector('.lightbox-media');
+    const assetUrl = `${ASSETS_BASE_URL}${item.url}`;
+
+    // Remove any previously injected video element and restore the img
+    let existingVideo = mediaContainer.querySelector('video');
+    if (existingVideo) {
+        existingVideo.remove();
+        lightboxImg.classList.remove('hidden');
+    }
+
+    if (item.type === 'video') {
+        lightboxImg.classList.add('hidden');
+        const video = document.createElement('video');
+        video.src = assetUrl;
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.controls = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '100%';
+        mediaContainer.appendChild(video);
+    } else {
+        lightboxImg.src = assetUrl;
+    }
+
+    originalLink.href = assetUrl;
     
     document.getElementById('lightbox-title').textContent = item.title;
     
