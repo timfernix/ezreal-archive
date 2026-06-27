@@ -80,10 +80,15 @@
                 <h2 id="lightbox-title" class="lightbox-title"></h2>
                 <div id="lightbox-details" class="lightbox-details"></div>
                 <div id="lightbox-tags" class="lightbox-tags-container"></div>
-                <a id="original-link" href="" target="_blank" class="view-original-btn">View Original</a>
+                <div class="lightbox-actions">
+                    <a id="original-link" href="" target="_blank" class="view-original-btn">Open Original File</a>
+                    <button id="share-asset-link" type="button" class="share-asset-btn">Share Asset</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
     <script src="script.js" type="module"></script>
 </body>

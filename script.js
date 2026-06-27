@@ -1,8 +1,10 @@
 const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
+const SHARE_BASE_URL = 'https://ezreal.timfernix.dev/';
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
 let currentSort = 'newest';
+let currentLightboxItem = null;
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -13,6 +15,9 @@ const archiveMeta = document.getElementById('archive-meta');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const originalLink = document.getElementById('original-link');
+const shareAssetLinkButton = document.getElementById('share-asset-link');
+const toastElement = document.getElementById('toast');
+let toastTimeoutId = null;
 
 function normalizeValue(value) {
     return typeof value === 'string' ? value.trim() : value;
@@ -165,18 +170,148 @@ function updateArchiveMeta(items) {
     archiveMeta.textContent = `Synced: ${syncedAt} | Total: ${totalItems}`;
 }
 
+function getAssetShareId(item) {
+    return `${item.source || 'asset'}:${item.url}`;
+}
+
+function getUrlParams() {
+    return new URLSearchParams(window.location.search);
+}
+
+function applyUrlStateToInputs() {
+    const params = getUrlParams();
+    const searchFromUrl = params.get('q') || '';
+    const sortFromUrl = params.get('sort');
+    const skinlines = params.getAll('skinline');
+    const categories = params.getAll('category');
+    const games = params.getAll('game');
+
+    searchInput.value = searchFromUrl;
+
+    if (sortFromUrl && ['newest', 'name-asc', 'skinline-asc', 'none'].includes(sortFromUrl)) {
+        currentSort = sortFromUrl;
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.value = sortFromUrl;
+        }
+    }
+
+    activeFilters.skinlines = skinlines.filter(value => allMediaItems.some(item => item.skinline === value));
+    activeFilters.categories = categories.filter(value => allMediaItems.some(item => item.category === value));
+    activeFilters.games = games.filter(value => allMediaItems.some(item => item.game === value));
+}
+
+function syncCheckboxUIWithActiveFilters() {
+    const groups = [
+        { menuId: 'skinline-menu', key: 'skinlines' },
+        { menuId: 'cat-menu', key: 'categories' },
+        { menuId: 'game-menu', key: 'games' }
+    ];
+
+    groups.forEach(group => {
+        const menu = document.getElementById(group.menuId);
+        if (!menu) {
+            return;
+        }
+
+        menu.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = activeFilters[group.key].includes(checkbox.value);
+        });
+    });
+}
+
+function buildShareableUrl(item, useCustomBase = false) {
+    const baseUrl = useCustomBase ? SHARE_BASE_URL : window.location.origin + window.location.pathname;
+    const url = new URL(baseUrl);
+
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm) {
+        url.searchParams.set('q', searchTerm);
+    }
+
+    if (currentSort) {
+        url.searchParams.set('sort', currentSort);
+    }
+
+    activeFilters.skinlines.forEach(value => url.searchParams.append('skinline', value));
+    activeFilters.categories.forEach(value => url.searchParams.append('category', value));
+    activeFilters.games.forEach(value => url.searchParams.append('game', value));
+
+    if (item) {
+        url.searchParams.set('asset', getAssetShareId(item));
+    }
+
+    return url;
+}
+
+function showToast(message) {
+    if (!toastElement) {
+        return;
+    }
+
+    if (toastTimeoutId) {
+        clearTimeout(toastTimeoutId);
+    }
+
+    toastElement.textContent = message;
+    toastElement.classList.remove('hidden');
+
+    requestAnimationFrame(() => {
+        toastElement.classList.add('show');
+    });
+
+    toastTimeoutId = setTimeout(() => {
+        toastElement.classList.remove('show');
+        setTimeout(() => {
+            toastElement.classList.add('hidden');
+        }, 220);
+    }, 1800);
+}
+
+function syncUrlWithState() {
+    const nextUrl = buildShareableUrl(currentLightboxItem, false);
+    const nextRelative = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    history.replaceState({}, '', nextRelative);
+}
+
+function openAssetFromUrlParam(assetIdFromInit) {
+    const params = getUrlParams();
+    const assetId = assetIdFromInit || params.get('asset');
+
+    if (!assetId) {
+        return;
+    }
+
+    const item = allMediaItems.find(media => getAssetShareId(media) === assetId);
+    if (item) {
+        openLightbox(item, { syncUrl: false });
+    }
+}
+
+function closeLightbox(syncUrl = true) {
+    currentLightboxItem = null;
+    lightbox.classList.add('hidden');
+
+    if (syncUrl) {
+        syncUrlWithState();
+    }
+}
+
 // Close Lightbox Events
-document.querySelector('.close-btn').addEventListener('click', () => lightbox.classList.add('hidden'));
+document.querySelector('.close-btn').addEventListener('click', () => closeLightbox());
 lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) lightbox.classList.add('hidden');
+    if (e.target === lightbox) closeLightbox();
 });
 
-function openLightbox(item) {
+function openLightbox(item, options = {}) {
+    const { syncUrl = true } = options;
     const mediaContainer = document.querySelector('.lightbox-media');
     const assetUrl = resolveMediaUrl(item);
     const isExternal = isExternalItem(item);
     const detailsDiv = document.getElementById('lightbox-details');
     const tagsDiv = document.getElementById('lightbox-tags');
+
+    currentLightboxItem = item;
 
     let existingVideo = mediaContainer.querySelector('video');
     if (existingVideo) {
@@ -300,10 +435,15 @@ function openLightbox(item) {
     }
     
     lightbox.classList.remove('hidden');
+
+    if (syncUrl) {
+        syncUrlWithState();
+    }
 }
 
 async function init() {
     try {
+        const initialAssetId = getUrlParams().get('asset');
         const response = await fetch(API_URL);
         const data = await response.json();
         
@@ -342,6 +482,8 @@ async function init() {
         createCheckboxes('skinline-menu', [...new Set(allMediaItems.map(m => m.skinline))].sort(), 'skinlines');
         createCheckboxes('cat-menu', [...new Set(allMediaItems.map(m => m.category))].sort(), 'categories');
         createCheckboxes('game-menu', [...new Set(allMediaItems.map(m => m.game))].sort(), 'games');
+        applyUrlStateToInputs();
+        syncCheckboxUIWithActiveFilters();
         updateArchiveMeta(allMediaItems);
         
         searchInput.addEventListener('input', applyFilters);
@@ -355,7 +497,8 @@ async function init() {
             });
         });
 
-        renderGallery(sortItems(allMediaItems, currentSort));
+        applyFilters({ syncUrl: false });
+        openAssetFromUrlParam(initialAssetId);
         loadingIndicator.classList.add('hidden');
     } catch (error) {
         console.error('API Error:', error);
@@ -379,7 +522,8 @@ function createCheckboxes(menuId, options, filterType) {
     });
 }
 
-function applyFilters() {
+function applyFilters(options = {}) {
+    const { syncUrl = true } = options;
     const searchTerm = searchInput.value.toLowerCase();
     
     let filtered = allMediaItems.filter(item => {
@@ -394,6 +538,10 @@ function applyFilters() {
     filtered = sortItems(filtered, currentSort);
 
     renderGallery(filtered);
+
+    if (syncUrl) {
+        syncUrlWithState();
+    }
 }
 
 function sortItems(items, sortType) {
@@ -524,3 +672,27 @@ function renderGallery(items) {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+if (shareAssetLinkButton) {
+    shareAssetLinkButton.addEventListener('click', async () => {
+        if (!currentLightboxItem) {
+            return;
+        }
+
+        const shareUrl = buildShareableUrl(currentLightboxItem, true).toString();
+        let copied = false;
+
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(shareUrl);
+                copied = true;
+            }
+        } catch {
+            copied = false;
+        }
+
+        showToast(copied ? 'Link copied' : 'Share link opened');
+
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
+    });
+}

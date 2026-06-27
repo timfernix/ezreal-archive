@@ -460,6 +460,33 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     box-shadow: 0 8px 16px rgba(56, 189, 248, 0.3);
 }
 
+.lightbox-actions {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.share-asset-btn {
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--accent);
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.share-asset-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(56, 189, 248, 0.2);
+    border-color: rgba(56, 189, 248, 0.65);
+}
+
 @media (max-width: 768px) {
     .lightbox {
         padding: 1rem;
@@ -493,6 +520,10 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
         overflow-y: visible;
         padding: 1.5rem;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .lightbox-actions {
+        grid-template-columns: 1fr;
     }
     
     .lightbox-title {
@@ -636,4 +667,29 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     accent-color: var(--accent);
     width: 16px;
     height: 16px;
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.4rem;
+    transform: translate(-50%, 14px);
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    color: #e2e8f0;
+    border-radius: 999px;
+    padding: 0.62rem 0.95rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 1200;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
 }
