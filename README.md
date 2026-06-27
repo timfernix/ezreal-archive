@@ -1,6 +1,6 @@
 # Ezreal Media Archive
 
-![Ezreal Media Archive](https://assets.timfernix.dev/archive.png)
+![Ezreal Media Archive](https://assets.timfernix.dev/archive.png?v=2)
 
 A curated archive of official Ezreal media from League of Legends and related games.
 
