@@ -691,8 +691,6 @@ if (shareAssetLinkButton) {
             copied = false;
         }
 
-        showToast(copied ? 'Link copied' : 'Share link opened');
-
-        window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        showToast(copied ? 'Link copied' : 'Copy failed');
     });
 }
