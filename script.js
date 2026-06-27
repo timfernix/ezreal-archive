@@ -95,7 +95,7 @@ function resolveMediaUrl(item) {
     return `${ASSETS_BASE_URL}${item.url}`;
 }
 
-function getYouTubeEmbedUrl(url) {
+function getYouTubeVideoId(url) {
     if (!url) {
         return null;
     }
@@ -106,23 +106,44 @@ function getYouTubeEmbedUrl(url) {
 
         if (host === 'youtu.be') {
             const videoId = parsed.pathname.replace('/', '').trim();
-            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+            return videoId || null;
         }
 
         if (host.includes('youtube.com')) {
             const videoId = parsed.searchParams.get('v');
             if (videoId) {
-                return `https://www.youtube.com/embed/${videoId}`;
+                return videoId;
             }
 
             const pathParts = parsed.pathname.split('/').filter(Boolean);
             const embedIndex = pathParts.indexOf('embed');
+
             if (embedIndex !== -1 && pathParts[embedIndex + 1]) {
-                return `https://www.youtube.com/embed/${pathParts[embedIndex + 1]}`;
+                return pathParts[embedIndex + 1];
             }
         }
     } catch {
         return null;
+    }
+
+    return null;
+}
+
+function getYouTubeEmbedUrl(url) {
+    const videoId = getYouTubeVideoId(url);
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
+function getExternalPreviewImageUrl(item) {
+    const url = resolveMediaUrl(item);
+
+    if (item.platform === 'youtube') {
+        const videoId = getYouTubeVideoId(url);
+        return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+    }
+
+    if (item.platform === 'tenor' || /\.gif($|\?)/i.test(url)) {
+        return url;
     }
 
     return null;
@@ -174,6 +195,7 @@ function openLightbox(item) {
     }
 
     if (isExternal) {
+        const previewImageUrl = getExternalPreviewImageUrl(item);
         lightboxImg.classList.add('hidden');
 
         if (item.platform === 'youtube') {
@@ -190,7 +212,13 @@ function openLightbox(item) {
             }
         }
 
-        if (!mediaContainer.querySelector('iframe')) {
+        if (!mediaContainer.querySelector('iframe') && previewImageUrl) {
+            lightboxImg.classList.remove('hidden');
+            lightboxImg.src = previewImageUrl;
+            lightboxImg.alt = item.title;
+        }
+
+        if (!mediaContainer.querySelector('iframe') && !previewImageUrl) {
             const externalHint = document.createElement('div');
             externalHint.className = 'external-link-preview';
             externalHint.textContent = `External ${item.platform ? `${item.platform} ` : ''}link`;
@@ -419,10 +447,20 @@ function renderGallery(items) {
         const mediaUrl = resolveMediaUrl(item);
         
         if (isExternalItem(item)) {
-            const externalPreview = document.createElement('div');
-            externalPreview.className = 'external-link-preview';
-            externalPreview.textContent = item.platform ? `External: ${item.platform}` : 'External Link';
-            mediaWrapper.appendChild(externalPreview);
+            const previewImageUrl = getExternalPreviewImageUrl(item);
+
+            if (previewImageUrl) {
+                const img = document.createElement('img');
+                img.src = previewImageUrl;
+                img.alt = item.title;
+                img.loading = 'lazy';
+                mediaWrapper.appendChild(img);
+            } else {
+                const externalPreview = document.createElement('div');
+                externalPreview.className = 'external-link-preview';
+                externalPreview.textContent = item.platform ? `External: ${item.platform}` : 'External Link';
+                mediaWrapper.appendChild(externalPreview);
+            }
         } else if (item.type === 'video') {
             const video = document.createElement('video');
             video.src = mediaUrl;
