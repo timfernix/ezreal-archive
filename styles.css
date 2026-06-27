@@ -611,6 +611,30 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     color: var(--text-main); 
 }
 
+.clear-filters-btn {
+    width: 100%;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    color: #e2e8f0;
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+    background: rgba(148, 163, 184, 0.16);
+    border-color: rgba(148, 163, 184, 0.62);
+    transform: translateY(-1px);
+}
+
+.clear-filters-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.24);
+}
+
 .dropdown-menu {
     position: absolute;
     top: 100%;

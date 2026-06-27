@@ -8,6 +8,7 @@ let currentLightboxItem = null;
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
+const clearFiltersButton = document.getElementById('clear-filters-btn');
 const noResultsIndicator = document.getElementById('no-results');
 const loadingIndicator = document.getElementById('loading');
 const archiveMeta = document.getElementById('archive-meta');
@@ -218,6 +219,22 @@ function syncCheckboxUIWithActiveFilters() {
             checkbox.checked = activeFilters[group.key].includes(checkbox.value);
         });
     });
+}
+
+function clearAllFilters() {
+    activeFilters = { skinlines: [], categories: [], games: [] };
+    searchInput.value = '';
+    currentSort = 'newest';
+
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.value = currentSort;
+    }
+
+    syncCheckboxUIWithActiveFilters();
+    document.querySelectorAll('.dropdown-menu.show').forEach(menu => menu.classList.remove('show'));
+    applyFilters();
+    showToast('Filters cleared');
 }
 
 function buildShareableUrl(item, useCustomBase = false) {
@@ -496,6 +513,10 @@ async function init() {
                 document.getElementById(e.target.dataset.target).classList.toggle('show');
             });
         });
+
+        if (clearFiltersButton) {
+            clearFiltersButton.addEventListener('click', clearAllFilters);
+        }
 
         applyFilters({ syncUrl: false });
         openAssetFromUrlParam(initialAssetId);
