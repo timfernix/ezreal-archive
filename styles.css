@@ -202,6 +202,23 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     display: block;
 }
 
+.external-link-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+    color: #cbd5e1;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.2), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(125, 211, 252, 0.14), transparent 50%),
+        rgba(11, 15, 25, 0.75);
+}
+
 .card-info { padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; flex-grow: 1; }
 
 .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
@@ -334,6 +351,14 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     max-height: 70vh;
     border-radius: 8px;
     object-fit: contain;
+}
+
+.lightbox-embed {
+    width: min(100%, 960px);
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 10px;
+    background: #000;
 }
 
 .lightbox-info {

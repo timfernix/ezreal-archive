@@ -83,6 +83,51 @@ function getSortableReleaseYear(value) {
     return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
 }
 
+function isExternalItem(item) {
+    return item?.source === 'external_link' || item?.type === 'external';
+}
+
+function resolveMediaUrl(item) {
+    if (isExternalItem(item)) {
+        return item.url;
+    }
+
+    return `${ASSETS_BASE_URL}${item.url}`;
+}
+
+function getYouTubeEmbedUrl(url) {
+    if (!url) {
+        return null;
+    }
+
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.toLowerCase();
+
+        if (host === 'youtu.be') {
+            const videoId = parsed.pathname.replace('/', '').trim();
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        }
+
+        if (host.includes('youtube.com')) {
+            const videoId = parsed.searchParams.get('v');
+            if (videoId) {
+                return `https://www.youtube.com/embed/${videoId}`;
+            }
+
+            const pathParts = parsed.pathname.split('/').filter(Boolean);
+            const embedIndex = pathParts.indexOf('embed');
+            if (embedIndex !== -1 && pathParts[embedIndex + 1]) {
+                return `https://www.youtube.com/embed/${pathParts[embedIndex + 1]}`;
+            }
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}
+
 function updateArchiveMeta(items) {
     if (!archiveMeta) {
         return;
@@ -107,7 +152,10 @@ lightbox.addEventListener('click', (e) => {
 
 function openLightbox(item) {
     const mediaContainer = document.querySelector('.lightbox-media');
-    const assetUrl = `${ASSETS_BASE_URL}${item.url}`;
+    const assetUrl = resolveMediaUrl(item);
+    const isExternal = isExternalItem(item);
+    const detailsDiv = document.getElementById('lightbox-details');
+    const tagsDiv = document.getElementById('lightbox-tags');
 
     let existingVideo = mediaContainer.querySelector('video');
     if (existingVideo) {
@@ -115,7 +163,40 @@ function openLightbox(item) {
         lightboxImg.classList.remove('hidden');
     }
 
-    if (item.type === 'video') {
+    let existingEmbed = mediaContainer.querySelector('iframe');
+    if (existingEmbed) {
+        existingEmbed.remove();
+    }
+
+    let existingExternalHint = mediaContainer.querySelector('.external-link-preview');
+    if (existingExternalHint) {
+        existingExternalHint.remove();
+    }
+
+    if (isExternal) {
+        lightboxImg.classList.add('hidden');
+
+        if (item.platform === 'youtube') {
+            const embedUrl = getYouTubeEmbedUrl(assetUrl);
+
+            if (embedUrl) {
+                const iframe = document.createElement('iframe');
+                iframe.src = embedUrl;
+                iframe.title = item.title;
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+                iframe.allowFullscreen = true;
+                iframe.className = 'lightbox-embed';
+                mediaContainer.appendChild(iframe);
+            }
+        }
+
+        if (!mediaContainer.querySelector('iframe')) {
+            const externalHint = document.createElement('div');
+            externalHint.className = 'external-link-preview';
+            externalHint.textContent = `External ${item.platform ? `${item.platform} ` : ''}link`;
+            mediaContainer.appendChild(externalHint);
+        }
+    } else if (item.type === 'video') {
         lightboxImg.classList.add('hidden');
         const video = document.createElement('video');
         video.src = assetUrl;
@@ -132,11 +213,13 @@ function openLightbox(item) {
     }
 
     originalLink.href = assetUrl;
+    originalLink.target = '_blank';
+    originalLink.rel = 'noopener noreferrer';
+    originalLink.textContent = isExternal ? 'Open External Link' : 'View Original';
     
     document.getElementById('lightbox-title').textContent = item.title;
     
     // Create details section
-    const detailsDiv = document.getElementById('lightbox-details');
     detailsDiv.innerHTML = `
         <div class="detail-item">
             <span class="detail-label">Skin:</span>
@@ -162,9 +245,17 @@ function openLightbox(item) {
             <span class="detail-label">Type:</span>
             <span class="detail-value">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
         </div>
+        <div class="detail-item">
+            <span class="detail-label">Source:</span>
+            <span class="detail-value">${item.source === 'external_link' ? 'External Link' : 'Asset'}</span>
+        </div>
+        ${item.platform ? `
+        <div class="detail-item">
+            <span class="detail-label">Platform:</span>
+            <span class="detail-value">${item.platform}</span>
+        </div>` : ''}
     `;
     
-    const tagsDiv = document.getElementById('lightbox-tags');
     if (item.tags.length > 0) {
         tagsDiv.innerHTML = '<div class="tags-label">Tags:</div>';
         const tagContainer = document.createElement('div');
@@ -197,6 +288,8 @@ async function init() {
                 const skinline = resolveSkinline(skin);
                 const releaseYear = resolveReleaseYear(skin, asset);
                 const skinReleaseYear = resolveSkinReleaseYear(skin);
+                const source = normalizeValue(asset.source) || 'asset';
+                const platform = normalizeValue(asset.platform) || '';
 
                 allMediaItems.push({
                     title,
@@ -206,12 +299,14 @@ async function init() {
                     url: asset.url,
                     category: asset.category || 'Uncategorized',
                     game: asset.game || 'Generic',
+                    source,
+                    platform,
                     skinline,
                     releaseYear,
                     skinReleaseYear,
                     tags: safeTags,
                     // Use safeTags here so .join() never crashes
-                    searchString: `${title} ${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${releaseYear} ${skinReleaseYear} ${safeTags.join(' ')}`.toLowerCase()
+                    searchString: `${title} ${skinName} ${skinline} ${normalizeValue(skin.description) || ''} ${asset.category || ''} ${asset.game || ''} ${source} ${platform} ${releaseYear} ${skinReleaseYear} ${safeTags.join(' ')}`.toLowerCase()
                 });
             });
         });
@@ -321,10 +416,16 @@ function renderGallery(items) {
         mediaWrapper.className = 'card-media';
         mediaWrapper.style.cursor = 'pointer';
         mediaWrapper.addEventListener('click', () => openLightbox(item));
+        const mediaUrl = resolveMediaUrl(item);
         
-        if (item.type === 'video') {
+        if (isExternalItem(item)) {
+            const externalPreview = document.createElement('div');
+            externalPreview.className = 'external-link-preview';
+            externalPreview.textContent = item.platform ? `External: ${item.platform}` : 'External Link';
+            mediaWrapper.appendChild(externalPreview);
+        } else if (item.type === 'video') {
             const video = document.createElement('video');
-            video.src = `${ASSETS_BASE_URL}${item.url}`;
+            video.src = mediaUrl;
             video.autoplay = true;
             video.loop = true;
             video.muted = true;
@@ -332,7 +433,7 @@ function renderGallery(items) {
             mediaWrapper.appendChild(video);
         } else {
             const img = document.createElement('img');
-            img.src = `${ASSETS_BASE_URL}${item.url}`;
+            img.src = mediaUrl;
             img.alt = item.title;
             img.loading = 'lazy';
             mediaWrapper.appendChild(img);
