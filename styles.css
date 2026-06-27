@@ -557,40 +557,41 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     position: relative;
 }
 
-.filter-toggle {
+.filter-toggle,
+.sort-select,
+.clear-filters-btn {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-light);
-    color: var(--text-main);
+    min-height: 48px;
     padding: 0.9rem 1.1rem;
     border-radius: 8px;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+.filter-toggle {
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.24);
+    color: #d5e8f2;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, border-color 0.2s ease;
     white-space: nowrap;
 }
 
 .filter-toggle:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--accent);
-    color: var(--accent);
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.36);
+    transform: translateY(-0.5px);
 }
 
 .sort-select {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-light);
-    color: var(--text-main);
-    padding: 0.9rem 1.1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    color: #f1f5f9;
     cursor: pointer;
     outline: none;
     transition: all 0.2s ease;
     appearance: none;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%2264748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23e2e8f0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
     background-repeat: no-repeat;
     background-position: right 0.8rem top 50%;
     background-size: 0.6rem auto;
@@ -598,12 +599,14 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 
 .sort-select:hover {
-    border-color: var(--accent);
+    border-color: rgba(148, 163, 184, 0.4);
+    background: rgba(148, 163, 184, 0.12);
+    transform: translateY(-0.5px);
 }
 
 .sort-select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    border-color: rgba(226, 232, 240, 0.5);
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.18);
 }
 
 .sort-select option { 
@@ -612,27 +615,22 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 
 .clear-filters-btn {
-    width: 100%;
-    background: rgba(148, 163, 184, 0.08);
-    border: 1px solid rgba(148, 163, 184, 0.38);
-    color: #e2e8f0;
-    padding: 0.9rem 1.1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
+    background: rgba(249, 115, 22, 0.09);
+    border: 1px solid rgba(249, 115, 22, 0.28);
+    color: #ffe2c2;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .clear-filters-btn:hover {
-    background: rgba(148, 163, 184, 0.16);
-    border-color: rgba(148, 163, 184, 0.62);
-    transform: translateY(-1px);
+    background: rgba(249, 115, 22, 0.13);
+    border-color: rgba(249, 115, 22, 0.42);
+    transform: translateY(-0.5px);
 }
 
 .clear-filters-btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.24);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16);
 }
 
 .dropdown-menu {
