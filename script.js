@@ -2,6 +2,8 @@ const API_URL = '/api/skins';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 const SHARE_BASE_URL = 'https://ezreal.timfernix.dev/';
 const PAGE_SIZE = 50;
+const EAGER_LOAD_COUNT = 15;
+const PREVIEW_MARGIN = '500px 0px';
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
 let currentSort = 'newest';
@@ -706,6 +708,21 @@ function renderGallery(items) {
     });
 
     container.appendChild(fragment);
+
+    // Eager-load first N cards for faster initial scroll experience
+    let eagerCount = 0;
+    container.querySelectorAll('.card-media').forEach(mediaWrapper => {
+        if (eagerCount < EAGER_LOAD_COUNT) {
+            hydrateCardPreview(mediaWrapper);
+            eagerCount++;
+        } else {
+            if (previewObserver) {
+                previewObserver.observe(mediaWrapper);
+            } else {
+                hydrateCardPreview(mediaWrapper);
+            }
+        }
+    });
 }
 
 function createPreviewObserver() {
@@ -723,7 +740,7 @@ function createPreviewObserver() {
             previewObserver.unobserve(entry.target);
         });
     }, {
-        rootMargin: '300px 0px'
+        rootMargin: PREVIEW_MARGIN
     });
 }
 
@@ -742,13 +759,6 @@ function queueCardPreviewLoad(mediaWrapper, item) {
     mediaWrapper.dataset.externalPreviewUrl = getExternalPreviewImageUrl(item) || '';
     mediaWrapper.dataset.itemTitle = item.title;
     mediaWrapper.dataset.platform = item.platform || '';
-
-    if (!previewObserver) {
-        hydrateCardPreview(mediaWrapper);
-        return;
-    }
-
-    previewObserver.observe(mediaWrapper);
 }
 
 function hydrateCardPreview(mediaWrapper) {
@@ -770,7 +780,7 @@ function hydrateCardPreview(mediaWrapper) {
             const img = document.createElement('img');
             img.src = previewImageUrl;
             img.alt = title;
-            img.loading = 'lazy';
+            img.loading = 'eager';
             img.decoding = 'async';
             mediaWrapper.appendChild(img);
         } else {
@@ -792,7 +802,7 @@ function hydrateCardPreview(mediaWrapper) {
         const img = document.createElement('img');
         img.src = mediaUrl;
         img.alt = title;
-        img.loading = 'lazy';
+        img.loading = 'eager';
         img.decoding = 'async';
         mediaWrapper.appendChild(img);
     }
