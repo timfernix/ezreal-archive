@@ -37,9 +37,9 @@ body {
 }
 
 .nav-content {
-    max-width: 1600px;
+    max-width: none;
     margin: 0 auto;
-    padding: 0 2rem 1.5rem 2rem;
+    padding: 0 2.5rem 1.5rem 2.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,9 +87,9 @@ body {
 }
 
 .filter-section {
-    max-width: 1600px;
+    max-width: none;
     margin: 0 auto;
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 2.5rem;
     width: 100%;
 }
 
@@ -161,12 +161,48 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 .select-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .select-group select { width: auto; flex-grow: 1; }
 
-.gallery-wrapper { max-width: 1600px; margin: 2rem auto; padding: 0 2rem; }
+.gallery-wrapper { max-width: none; margin: 1.6rem auto 2.2rem auto; padding: 0 2.5rem; }
 
 .grid-layout {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(clamp(220px, 22vw, 320px), 1fr));
     gap: 1.5rem;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.4rem;
+    padding-top: 0.4rem;
+}
+
+.load-more-btn {
+    min-height: 44px;
+    padding: 0.72rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    background: rgba(56, 189, 248, 0.12);
+    color: #d7edf8;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(56, 189, 248, 0.5);
+    background: rgba(56, 189, 248, 0.2);
+}
+
+.load-more-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.pagination-status {
+    display: none;
 }
 
 .state-message { text-align: center; color: var(--text-muted); margin-top: 4rem; font-size: 1.1rem; }
@@ -282,7 +318,11 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     }
     
     .gallery-wrapper { padding: 0 1rem; }
-    .grid-layout { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .grid-layout { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
+
+    .pagination-controls {
+        justify-content: center;
+    }
     
     .dropdown-menu {
         min-width: 150px;
@@ -680,6 +720,10 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     
     .brand-name {
         font-size: 1.5rem;
+    }
+
+    .gallery-wrapper {
+        padding: 0 0.8rem;
     }
 }
 
