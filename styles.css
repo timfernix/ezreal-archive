@@ -34,6 +34,11 @@ body {
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-light);
     padding: 1.5rem 0 0 0;
+    transition: transform 0.28s ease;
+}
+
+.glass-nav.nav-hidden {
+    transform: translateY(-100%);
 }
 
 .nav-content {

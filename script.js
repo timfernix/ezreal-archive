@@ -1045,7 +1045,45 @@ async function ensureAssetAvailable(assetId) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    initScrollHideNav();
+});
+
+function initScrollHideNav() {
+    const nav = document.querySelector('.glass-nav');
+    if (!nav) return;
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            // Only hide on mobile
+            if (window.innerWidth > 768) {
+                nav.classList.remove('nav-hidden');
+                lastScrollY = window.scrollY;
+                ticking = false;
+                return;
+            }
+
+            const currentScrollY = window.scrollY;
+            const scrolledDown = currentScrollY > lastScrollY;
+            const pastThreshold = currentScrollY > 80;
+
+            if (scrolledDown && pastThreshold) {
+                nav.classList.add('nav-hidden');
+            } else {
+                nav.classList.remove('nav-hidden');
+            }
+
+            lastScrollY = currentScrollY;
+            ticking = false;
+        });
+    }, { passive: true });
+}
 
 if (shareAssetLinkButton) {
     shareAssetLinkButton.addEventListener('click', async () => {
