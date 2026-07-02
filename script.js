@@ -13,6 +13,7 @@ let hasMoreServerData = true;
 let isFetchingPage = false;
 let totalAvailableItems = null;
 let deferInitialGalleryRender = false;
+let allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -492,10 +493,17 @@ async function init() {
         const initialAssetId = getUrlParams().get('asset');
         deferInitialGalleryRender = Boolean(initialAssetId);
 
+        // Fetch all available filter options first (cheap, single DB query)
+        await fetchFilterOptions();
+
+        // Then start pagination
         await fetchNextPage({ forceLegacyFullFetch: false });
 
         applyUrlStateToInputs();
-        refreshFilterMenus();
+        // Use the fetched filter options, not just what's in allMediaItems
+        createCheckboxes('skinline-menu', allAvailableFilterOptions.skinlines, 'skinlines');
+        createCheckboxes('cat-menu', allAvailableFilterOptions.categories, 'categories');
+        createCheckboxes('game-menu', allAvailableFilterOptions.games, 'games');
         syncCheckboxUIWithActiveFilters();
         updateArchiveMeta(allMediaItems);
         
@@ -517,7 +525,6 @@ async function init() {
         if (loadMoreButton) {
             loadMoreButton.addEventListener('click', async () => {
                 await fetchNextPage({ forceLegacyFullFetch: false });
-                refreshFilterMenus();
                 applyFilters();
             });
         }
@@ -571,17 +578,33 @@ function createCheckboxes(menuId, options, filterType) {
 }
 
 function refreshFilterMenus() {
-    const skinlineOptions = [...new Set(allMediaItems.map(m => m.skinline))].sort();
-    const categoryOptions = [...new Set(allMediaItems.map(m => m.category))].sort();
-    const gameOptions = [...new Set(allMediaItems.map(m => m.game))].sort();
+    // Filter options are now fetched from the backend and stored globally
+    // Just validate and sync the active filters
+    activeFilters.skinlines = activeFilters.skinlines.filter(value => allAvailableFilterOptions.skinlines.includes(value));
+    activeFilters.categories = activeFilters.categories.filter(value => allAvailableFilterOptions.categories.includes(value));
+    activeFilters.games = activeFilters.games.filter(value => allAvailableFilterOptions.games.includes(value));
+}
 
-    activeFilters.skinlines = activeFilters.skinlines.filter(value => skinlineOptions.includes(value));
-    activeFilters.categories = activeFilters.categories.filter(value => categoryOptions.includes(value));
-    activeFilters.games = activeFilters.games.filter(value => gameOptions.includes(value));
+async function fetchFilterOptions() {
+    try {
+        const response = await fetch('/api/filters');
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
 
-    createCheckboxes('skinline-menu', skinlineOptions, 'skinlines');
-    createCheckboxes('cat-menu', categoryOptions, 'categories');
-    createCheckboxes('game-menu', gameOptions, 'games');
+        const data = await response.json();
+        if (data && data.skinlines && data.categories && data.games) {
+            allAvailableFilterOptions = {
+                skinlines: Array.isArray(data.skinlines) ? data.skinlines : [],
+                categories: Array.isArray(data.categories) ? data.categories : [],
+                games: Array.isArray(data.games) ? data.games : []
+            };
+        }
+    } catch (err) {
+        console.warn('Failed to fetch filter options:', err);
+        // Fallback: filters will be populated from items as they load
+        allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
+    }
 }
 
 function applyFilters(options = {}) {
@@ -1035,10 +1058,9 @@ async function ensureAssetAvailable(assetId) {
             }
         }
     } catch {
-        // /api/asset not available, fall back to page-through
     }
 
-    // Fallback: page through until the asset turns up
+    // Fallback
     while (!allMediaItems.find(media => getAssetShareId(media) === assetId) && hasMoreServerData) {
         await fetchNextPage({ forceLegacyFullFetch: false });
         refreshFilterMenus();
