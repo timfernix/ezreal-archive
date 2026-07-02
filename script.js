@@ -553,10 +553,17 @@ async function init() {
 function createCheckboxes(menuId, options, filterType) {
     const menu = document.getElementById(menuId);
     if (!menu) {
+        console.warn(`Menu not found: ${menuId}`);
         return;
     }
 
+    console.log(`Creating checkboxes for ${menuId}:`, options);
     menu.innerHTML = '';
+
+    if (!options || options.length === 0) {
+        console.warn(`No options provided for ${menuId}`);
+        return;
+    }
 
     options.forEach(opt => {
         const label = document.createElement('label');
@@ -593,15 +600,20 @@ async function fetchFilterOptions() {
         }
 
         const data = await response.json();
+        console.log('Filter options fetched:', data);
+        
         if (data && data.skinlines && data.categories && data.games) {
             allAvailableFilterOptions = {
                 skinlines: Array.isArray(data.skinlines) ? data.skinlines : [],
                 categories: Array.isArray(data.categories) ? data.categories : [],
                 games: Array.isArray(data.games) ? data.games : []
             };
+            console.log('Filter options set:', allAvailableFilterOptions);
+        } else {
+            console.warn('Invalid filter response structure:', data);
         }
     } catch (err) {
-        console.warn('Failed to fetch filter options:', err);
+        console.error('Failed to fetch filter options:', err);
         // Fallback: filters will be populated from items as they load
         allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
     }
