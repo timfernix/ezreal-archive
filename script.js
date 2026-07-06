@@ -622,6 +622,7 @@ async function fetchFilterOptions() {
 function applyFilters(options = {}) {
     const { syncUrl = true, deferRender = false } = options;
     const searchTerm = searchInput.value.toLowerCase();
+    const hasActiveFilters = Boolean(searchTerm) || activeFilters.skinlines.length > 0 || activeFilters.categories.length > 0 || activeFilters.games.length > 0;
     
     let filtered = allMediaItems.filter(item => {
         const matchesSearch = item.searchString.includes(searchTerm);
@@ -645,6 +646,11 @@ function applyFilters(options = {}) {
 
     if (syncUrl) {
         syncUrlWithState();
+    }
+
+    // When filtering/searching: auto-load more server pages if results are below PAGE_SIZE
+    if (hasActiveFilters && filtered.length < PAGE_SIZE && hasMoreServerData && !isFetchingPage) {
+        fetchNextPage({ forceLegacyFullFetch: false }).then(() => applyFilters({ syncUrl }));
     }
 }
 
@@ -860,14 +866,20 @@ function updatePaginationControls(filteredCount = null) {
 
     paginationControls.classList.remove('hidden');
 
+    const searchTerm = searchInput.value.toLowerCase();
+    const hasActiveFilters = Boolean(searchTerm) || activeFilters.skinlines.length > 0 || activeFilters.categories.length > 0 || activeFilters.games.length > 0;
+
+    // Hide manual "Load more" while auto-fetching for active filters/search
+    const autoFetching = hasActiveFilters && (filteredCount === null || filteredCount < PAGE_SIZE) && hasMoreServerData;
+
     if (loadMoreButton) {
         loadMoreButton.disabled = isFetchingPage || !hasMoreServerData;
         loadMoreButton.textContent = isFetchingPage ? 'Loading...' : `Load ${PAGE_SIZE} more`;
-        loadMoreButton.classList.toggle('hidden', !hasMoreServerData);
+        loadMoreButton.classList.toggle('hidden', !hasMoreServerData || autoFetching);
     }
 
     if (paginationStatus) {
-        paginationStatus.textContent = '';
+        paginationStatus.textContent = autoFetching && isFetchingPage ? 'Loading more results...' : '';
     }
 }
 
