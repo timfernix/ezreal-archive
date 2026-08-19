@@ -5,6 +5,7 @@ const PAGE_SIZE = 50;
 const EAGER_LOAD_COUNT = 15;
 const PREVIEW_MARGIN = '500px 0px';
 const MAX_AUTO_FETCH_ITEMS = 1000; // cap auto-loaded pages while searching/filtering to avoid scanning the whole archive
+const SEARCH_DEBOUNCE_MS = 350;
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
 let currentSort = 'newest';
@@ -16,6 +17,7 @@ let totalAvailableItems = null;
 let deferInitialGalleryRender = false;
 let allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
 let searchAutoFetchLimitNotified = false;
+let searchDebounceTimer = null;
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -100,11 +102,6 @@ function resolveSkinReleaseYear(skin) {
     }
 
     return 'Unknown';
-}
-
-function getSortableReleaseYear(value) {
-    const numericYear = Number.parseInt(value, 10);
-    return Number.isNaN(numericYear) ? Number.NEGATIVE_INFINITY : numericYear;
 }
 
 function isExternalItem(item) {
@@ -230,9 +227,9 @@ function applyUrlStateToInputs() {
         }
     }
 
-    activeFilters.skinlines = skinlines.filter(value => allMediaItems.some(item => item.skinline === value));
-    activeFilters.categories = categories.filter(value => allMediaItems.some(item => item.category === value));
-    activeFilters.games = games.filter(value => allMediaItems.some(item => item.game === value));
+    activeFilters.skinlines = skinlines.filter(value => allAvailableFilterOptions.skinlines.includes(value));
+    activeFilters.categories = categories.filter(value => allAvailableFilterOptions.categories.includes(value));
+    activeFilters.games = games.filter(value => allAvailableFilterOptions.games.includes(value));
 }
 
 function syncCheckboxUIWithActiveFilters() {
@@ -267,7 +264,7 @@ function clearAllFilters() {
 
     syncCheckboxUIWithActiveFilters();
     document.querySelectorAll('.dropdown-menu.show').forEach(menu => menu.classList.remove('show'));
-    applyFilters();
+    reloadFromServer();
     showToast('Filters cleared');
 }
 
@@ -516,24 +513,25 @@ async function init() {
         // Fetch all available filter options first (cheap, single DB query)
         await fetchFilterOptions();
 
-        // Then start pagination
-        await fetchNextPage({ forceLegacyFullFetch: false });
-
+        // Restore search/sort/filters from the URL before the first page fetch so it's queried server-side from the start.
         applyUrlStateToInputs();
-        // Use the fetched filter options, not just what's in allMediaItems
         createCheckboxes('skinline-menu', allAvailableFilterOptions.skinlines, 'skinlines');
         createCheckboxes('cat-menu', allAvailableFilterOptions.categories, 'categories');
         createCheckboxes('game-menu', allAvailableFilterOptions.games, 'games');
         syncCheckboxUIWithActiveFilters();
+
+        // Then start pagination (already filtered/sorted server-side by the state restored above)
+        await fetchNextPage();
         updateArchiveMeta(allMediaItems);
-        
+
         searchInput.addEventListener('input', () => {
             searchAutoFetchLimitNotified = false;
-            applyFilters();
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => reloadFromServer(), SEARCH_DEBOUNCE_MS);
         });
         document.getElementById('sortSelect').addEventListener('change', (e) => {
             currentSort = e.target.value;
-            applyFilters();
+            reloadFromServer();
         });
         document.querySelectorAll('.filter-toggle').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -601,7 +599,7 @@ function createCheckboxes(menuId, options, filterType) {
                 activeFilters[filterType] = activeFilters[filterType].filter(item => item !== opt);
             }
             searchAutoFetchLimitNotified = false;
-            applyFilters(); // Trigger filtering whenever a box is toggled
+            reloadFromServer(); // Trigger filtering whenever a box is toggled
         });
         menu.appendChild(label);
     });
@@ -642,88 +640,36 @@ async function fetchFilterOptions() {
     }
 }
 
+// Renders whatever is currently in allMediaItems (already filtered/sorted server-side).
 function applyFilters(options = {}) {
     const { syncUrl = true, deferRender = false } = options;
-    const searchTerm = searchInput.value.toLowerCase();
-    const hasActiveFilters = Boolean(searchTerm) || activeFilters.skinlines.length > 0 || activeFilters.categories.length > 0 || activeFilters.games.length > 0;
-    
-    let filtered = allMediaItems.filter(item => {
-        const matchesSearch = item.searchString.includes(searchTerm);
-        const matchesSkinline = activeFilters.skinlines.length === 0 || activeFilters.skinlines.includes(item.skinline);
-        const matchesGame = activeFilters.games.length === 0 || activeFilters.games.includes(item.game);
-        const matchesCat = activeFilters.categories.length === 0 || activeFilters.categories.includes(item.category);
-        
-        return matchesSearch && matchesSkinline && matchesGame && matchesCat;
-    });
-
-    filtered = sortItems(filtered, currentSort);
 
     if (deferRender) {
         container.innerHTML = '';
         noResultsIndicator.classList.add('hidden');
     } else {
-        renderGallery(filtered);
+        renderGallery(allMediaItems);
     }
 
-    updatePaginationControls(filtered.length);
+    updatePaginationControls();
 
     if (syncUrl) {
         syncUrlWithState();
     }
-
-    // When filtering/searching: auto-load more server pages if results are below PAGE_SIZE,
-    // but cap it so a narrow search term can't silently pull in the entire archive.
-    const autoFetchLimitReached = allMediaItems.length >= MAX_AUTO_FETCH_ITEMS;
-    if (hasActiveFilters && filtered.length < PAGE_SIZE && hasMoreServerData && !isFetchingPage) {
-        if (autoFetchLimitReached) {
-            if (!searchAutoFetchLimitNotified) {
-                searchAutoFetchLimitNotified = true;
-                showToast('Showing partial results — refine your search or click "Load 50 more"');
-            }
-        } else {
-            fetchNextPage({ forceLegacyFullFetch: false }).then(() => applyFilters({ syncUrl }));
-        }
-    }
 }
 
-function sortItems(items, sortType) {
-    const sorted = [...items];
-    
-    switch(sortType) {
-        case 'name-asc':
-            sorted.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        case 'skinline-asc':
-            sorted.sort((a, b) => a.skinline.localeCompare(b.skinline));
-            break;
-        case 'newest':
-            sorted.sort((a, b) => {
-                const yearDifference = getSortableReleaseYear(b.releaseYear) - getSortableReleaseYear(a.releaseYear);
+// Resets pagination and re-fetches page 1 from the server using the current search/sort/filter state.
+async function reloadFromServer(options = {}) {
+    const { syncUrl = true } = options;
 
-                if (yearDifference !== 0) {
-                    return yearDifference;
-                }
+    allMediaItems = [];
+    serverOffset = 0;
+    hasMoreServerData = true;
+    totalAvailableItems = null;
+    searchAutoFetchLimitNotified = false;
 
-                return a.title.localeCompare(b.title);
-            });
-            break;
-        case 'oldest':
-            sorted.sort((a, b) => {
-                const yearDifference = getSortableReleaseYear(a.releaseYear) - getSortableReleaseYear(b.releaseYear);
-
-                if (yearDifference !== 0) {
-                    return yearDifference;
-                }
-
-                return a.title.localeCompare(b.title);
-            });
-            break;
-        case 'none':
-        default:
-            break;
-    }
-    
-    return sorted;
+    await fetchNextPage();
+    applyFilters({ syncUrl });
 }
 
 function renderGallery(items) {
@@ -894,7 +840,7 @@ function hydrateCardPreview(mediaWrapper) {
     mediaWrapper.dataset.loaded = 'true';
 }
 
-function updatePaginationControls(filteredCount = null) {
+function updatePaginationControls() {
     if (!paginationControls) {
         return;
     }
@@ -909,20 +855,14 @@ function updatePaginationControls(filteredCount = null) {
 
     paginationControls.classList.remove('hidden');
 
-    const searchTerm = searchInput.value.toLowerCase();
-    const hasActiveFilters = Boolean(searchTerm) || activeFilters.skinlines.length > 0 || activeFilters.categories.length > 0 || activeFilters.games.length > 0;
-
-    // Hide manual "Load more" while auto-fetching for active filters/search
-    const autoFetching = hasActiveFilters && (filteredCount === null || filteredCount < PAGE_SIZE) && hasMoreServerData;
-
     if (loadMoreButton) {
         loadMoreButton.disabled = isFetchingPage || !hasMoreServerData;
         loadMoreButton.textContent = isFetchingPage ? 'Loading...' : `Load ${PAGE_SIZE} more`;
-        loadMoreButton.classList.toggle('hidden', !hasMoreServerData || autoFetching);
+        loadMoreButton.classList.toggle('hidden', !hasMoreServerData);
     }
 
     if (paginationStatus) {
-        paginationStatus.textContent = autoFetching && isFetchingPage ? 'Loading more results...' : '';
+        paginationStatus.textContent = '';
     }
 }
 
@@ -1046,7 +986,7 @@ async function loadNextPage() {
         return;
     }
 
-    await fetchNextPage({ forceLegacyFullFetch: false });
+    await fetchNextPage();
     applyFilters();
 }
 
@@ -1057,19 +997,49 @@ function setupAutoLoadObserver() {
 
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            if (entry.isIntersecting && !isFetchingPage && hasMoreServerData) {
-                loadNextPage();
+            if (!entry.isIntersecting || isFetchingPage || !hasMoreServerData) {
+                return;
             }
+
+            // Bound automatic scroll-loading so an open-ended browsing session can't pull in the whole archive.
+            if (allMediaItems.length >= MAX_AUTO_FETCH_ITEMS) {
+                if (!searchAutoFetchLimitNotified) {
+                    searchAutoFetchLimitNotified = true;
+                    showToast('Auto-load paused — click "Load 50 more" to keep going');
+                }
+                return;
+            }
+
+            loadNextPage();
         });
     }, { rootMargin: '400px 0px' });
 
     observer.observe(autoLoadSentinel);
 }
 
-async function fetchNextPage(options = {}) {
-    const { forceLegacyFullFetch = false } = options;
+function buildSkinsRequestUrl() {
+    const requestUrl = new URL(API_URL, window.location.origin);
+    requestUrl.searchParams.set('limit', String(PAGE_SIZE));
+    requestUrl.searchParams.set('offset', String(serverOffset));
 
-    if (isFetchingPage || (!hasMoreServerData && !forceLegacyFullFetch)) {
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm) {
+        requestUrl.searchParams.set('q', searchTerm);
+    }
+
+    if (currentSort) {
+        requestUrl.searchParams.set('sort', currentSort);
+    }
+
+    activeFilters.skinlines.forEach(value => requestUrl.searchParams.append('skinline', value));
+    activeFilters.categories.forEach(value => requestUrl.searchParams.append('category', value));
+    activeFilters.games.forEach(value => requestUrl.searchParams.append('game', value));
+
+    return requestUrl;
+}
+
+async function fetchNextPage() {
+    if (isFetchingPage || !hasMoreServerData) {
         return;
     }
 
@@ -1078,18 +1048,14 @@ async function fetchNextPage(options = {}) {
     updateArchiveMetaSpinner();
 
     try {
-        const requestUrl = new URL(API_URL, window.location.origin);
-        requestUrl.searchParams.set('limit', String(PAGE_SIZE));
-        requestUrl.searchParams.set('offset', String(serverOffset));
+        const requestUrl = buildSkinsRequestUrl();
 
         const response = await fetch(requestUrl.toString());
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
         const data = await response.json();
         const normalized = normalizeApiPayload(data, PAGE_SIZE, serverOffset);
-
-        if (!normalized.backendSupportsPaging && allMediaItems.length > 0) {
-            hasMoreServerData = false;
-            return;
-        }
 
         const seenIds = new Set(allMediaItems.map(item => getAssetShareId(item)));
         const newItems = normalized.items.filter(item => {
@@ -1104,22 +1070,12 @@ async function fetchNextPage(options = {}) {
         allMediaItems.push(...newItems);
         totalAvailableItems = normalized.total;
         serverOffset = normalized.nextOffset;
-        hasMoreServerData = normalized.backendSupportsPaging ? normalized.hasMore : false;
+        hasMoreServerData = normalized.hasMore;
 
         updateArchiveMeta(allMediaItems);
     } catch (error) {
         console.error('Page fetch failed:', error);
-
-        if (allMediaItems.length === 0) {
-            // Fallback for older API implementations that only return complete arrays.
-            const legacyResponse = await fetch(API_URL);
-            const legacyData = await legacyResponse.json();
-            const legacyNormalized = normalizeApiPayload(legacyData, PAGE_SIZE, serverOffset);
-            allMediaItems = legacyNormalized.items;
-            hasMoreServerData = false;
-            totalAvailableItems = legacyNormalized.items.length;
-            updateArchiveMeta(allMediaItems);
-        }
+        showToast('Failed to load results — please try again');
     } finally {
         isFetchingPage = false;
         updatePaginationControls();
