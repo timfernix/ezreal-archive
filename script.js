@@ -1068,7 +1068,10 @@ async function fetchNextPage() {
         });
 
         allMediaItems.push(...newItems);
-        totalAvailableItems = normalized.total;
+        // total is only sent for the first page; later pages omit it to avoid re-counting the same query.
+        if (normalized.total !== null) {
+            totalAvailableItems = normalized.total;
+        }
         serverOffset = normalized.nextOffset;
         hasMoreServerData = normalized.hasMore;
 
