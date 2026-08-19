@@ -4,6 +4,7 @@ const SHARE_BASE_URL = 'https://ezreal.timfernix.dev/';
 const PAGE_SIZE = 50;
 const EAGER_LOAD_COUNT = 15;
 const PREVIEW_MARGIN = '500px 0px';
+const MAX_AUTO_FETCH_ITEMS = 1000; // cap auto-loaded pages while searching/filtering to avoid scanning the whole archive
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
 let currentSort = 'newest';
@@ -14,6 +15,7 @@ let isFetchingPage = false;
 let totalAvailableItems = null;
 let deferInitialGalleryRender = false;
 let allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
+let searchAutoFetchLimitNotified = false;
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -256,6 +258,7 @@ function clearAllFilters() {
     activeFilters = { skinlines: [], categories: [], games: [] };
     searchInput.value = '';
     currentSort = 'newest';
+    searchAutoFetchLimitNotified = false;
 
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
@@ -524,7 +527,10 @@ async function init() {
         syncCheckboxUIWithActiveFilters();
         updateArchiveMeta(allMediaItems);
         
-        searchInput.addEventListener('input', applyFilters);
+        searchInput.addEventListener('input', () => {
+            searchAutoFetchLimitNotified = false;
+            applyFilters();
+        });
         document.getElementById('sortSelect').addEventListener('change', (e) => {
             currentSort = e.target.value;
             applyFilters();
@@ -594,6 +600,7 @@ function createCheckboxes(menuId, options, filterType) {
             } else {
                 activeFilters[filterType] = activeFilters[filterType].filter(item => item !== opt);
             }
+            searchAutoFetchLimitNotified = false;
             applyFilters(); // Trigger filtering whenever a box is toggled
         });
         menu.appendChild(label);
@@ -664,9 +671,18 @@ function applyFilters(options = {}) {
         syncUrlWithState();
     }
 
-    // When filtering/searching: auto-load more server pages if results are below PAGE_SIZE
+    // When filtering/searching: auto-load more server pages if results are below PAGE_SIZE,
+    // but cap it so a narrow search term can't silently pull in the entire archive.
+    const autoFetchLimitReached = allMediaItems.length >= MAX_AUTO_FETCH_ITEMS;
     if (hasActiveFilters && filtered.length < PAGE_SIZE && hasMoreServerData && !isFetchingPage) {
-        fetchNextPage({ forceLegacyFullFetch: false }).then(() => applyFilters({ syncUrl }));
+        if (autoFetchLimitReached) {
+            if (!searchAutoFetchLimitNotified) {
+                searchAutoFetchLimitNotified = true;
+                showToast('Showing partial results — refine your search or click "Load 50 more"');
+            }
+        } else {
+            fetchNextPage({ forceLegacyFullFetch: false }).then(() => applyFilters({ syncUrl }));
+        }
     }
 }
 
