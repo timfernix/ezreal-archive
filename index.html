@@ -54,13 +54,17 @@
                 <div class="filter-group">
                     <select id="sortSelect" class="sort-select">
                         <option value="newest" selected>Newest First</option>
+                        <option value="oldest">Oldest First</option>
                         <option value="name-asc">File Name (A-Z)</option>
                         <option value="skinline-asc">Skinline (A-Z)</option>
                     </select>
                 </div>
                 <button id="clear-filters-btn" type="button" class="clear-filters-btn">Reset</button>
             </div>
-            <p id="archive-meta" class="archive-meta" aria-live="polite">Last synced: - | Total items: -</p>
+            <p id="archive-meta" class="archive-meta" aria-live="polite">
+                <span id="archive-meta-text">Last synced: - | Total items: -</span>
+                <span id="archive-meta-spinner" class="mini-spinner hidden" aria-hidden="true"></span>
+            </p>
         </div>
     </nav>
 
@@ -73,6 +77,7 @@
             <button id="load-more-btn" type="button" class="load-more-btn">Load 50 more</button>
             <p id="pagination-status" class="pagination-status hidden" aria-live="polite"></p>
         </div>
+        <div id="auto-load-sentinel" aria-hidden="true"></div>
     </main>
 
     <div id="lightbox" class="lightbox hidden">

@@ -21,9 +21,12 @@ const clearFiltersButton = document.getElementById('clear-filters-btn');
 const noResultsIndicator = document.getElementById('no-results');
 const loadingIndicator = document.getElementById('loading');
 const archiveMeta = document.getElementById('archive-meta');
+const archiveMetaText = document.getElementById('archive-meta-text');
+const archiveMetaSpinner = document.getElementById('archive-meta-spinner');
 const paginationControls = document.getElementById('pagination-controls');
 const loadMoreButton = document.getElementById('load-more-btn');
 const paginationStatus = document.getElementById('pagination-status');
+const autoLoadSentinel = document.getElementById('auto-load-sentinel');
 
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
@@ -182,7 +185,21 @@ function updateArchiveMeta(items) {
     const loadedItems = items.length;
     const totalSuffix = totalAvailableItems !== null ? ` / ${totalAvailableItems}` : '';
 
-    archiveMeta.textContent = `Synced: ${syncedAt} | Loaded: ${loadedItems}${totalSuffix}`;
+    if (archiveMetaText) {
+        archiveMetaText.textContent = `Synced: ${syncedAt} | Loaded: ${loadedItems}${totalSuffix}`;
+    } else {
+        archiveMeta.textContent = `Synced: ${syncedAt} | Loaded: ${loadedItems}${totalSuffix}`;
+    }
+
+    updateArchiveMetaSpinner();
+}
+
+function updateArchiveMetaSpinner() {
+    if (!archiveMetaSpinner) {
+        return;
+    }
+
+    archiveMetaSpinner.classList.toggle('hidden', !isFetchingPage);
 }
 
 function getAssetShareId(item) {
@@ -203,7 +220,7 @@ function applyUrlStateToInputs() {
 
     searchInput.value = searchFromUrl;
 
-    if (sortFromUrl && ['newest', 'name-asc', 'skinline-asc', 'none'].includes(sortFromUrl)) {
+    if (sortFromUrl && ['newest', 'oldest', 'name-asc', 'skinline-asc', 'none'].includes(sortFromUrl)) {
         currentSort = sortFromUrl;
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
@@ -523,11 +540,10 @@ async function init() {
         }
 
         if (loadMoreButton) {
-            loadMoreButton.addEventListener('click', async () => {
-                await fetchNextPage({ forceLegacyFullFetch: false });
-                applyFilters();
-            });
+            loadMoreButton.addEventListener('click', () => loadNextPage());
         }
+
+        setupAutoLoadObserver();
 
         if (initialAssetId) {
             await ensureAssetAvailable(initialAssetId);
@@ -667,6 +683,17 @@ function sortItems(items, sortType) {
         case 'newest':
             sorted.sort((a, b) => {
                 const yearDifference = getSortableReleaseYear(b.releaseYear) - getSortableReleaseYear(a.releaseYear);
+
+                if (yearDifference !== 0) {
+                    return yearDifference;
+                }
+
+                return a.title.localeCompare(b.title);
+            });
+            break;
+        case 'oldest':
+            sorted.sort((a, b) => {
+                const yearDifference = getSortableReleaseYear(a.releaseYear) - getSortableReleaseYear(b.releaseYear);
 
                 if (yearDifference !== 0) {
                     return yearDifference;
@@ -998,6 +1025,31 @@ function normalizeApiPayload(data, limit, offset) {
     };
 }
 
+async function loadNextPage() {
+    if (isFetchingPage || !hasMoreServerData) {
+        return;
+    }
+
+    await fetchNextPage({ forceLegacyFullFetch: false });
+    applyFilters();
+}
+
+function setupAutoLoadObserver() {
+    if (!autoLoadSentinel || !('IntersectionObserver' in window)) {
+        return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isFetchingPage && hasMoreServerData) {
+                loadNextPage();
+            }
+        });
+    }, { rootMargin: '400px 0px' });
+
+    observer.observe(autoLoadSentinel);
+}
+
 async function fetchNextPage(options = {}) {
     const { forceLegacyFullFetch = false } = options;
 
@@ -1007,6 +1059,7 @@ async function fetchNextPage(options = {}) {
 
     isFetchingPage = true;
     updatePaginationControls();
+    updateArchiveMetaSpinner();
 
     try {
         const requestUrl = new URL(API_URL, window.location.origin);
@@ -1054,6 +1107,7 @@ async function fetchNextPage(options = {}) {
     } finally {
         isFetchingPage = false;
         updatePaginationControls();
+        updateArchiveMetaSpinner();
     }
 }
 
