@@ -649,6 +649,7 @@ function createCheckboxes(menuId, options, filterType) {
 
     const iconMap = filterType === 'skinlines' ? SKINLINE_ICON_URLS
         : filterType === 'games' ? GAME_LOGO_URLS
+        : filterType === 'categories' ? CATEGORY_ICON_URLS
         : null;
 
     options.forEach(opt => {
