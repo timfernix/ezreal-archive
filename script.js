@@ -19,6 +19,68 @@ let allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
 let searchAutoFetchLimitNotified = false;
 let searchDebounceTimer = null;
 
+// Icons
+const SKINLINE_ICON_URLS = {
+    'Ace of Spades': 'https://assets.timfernix.dev/icons/Ezreal_8.ico',
+    'Arcade': 'https://assets.timfernix.dev/icons/Ezreal_9.ico',
+    'Base': 'https://assets.timfernix.dev/icons/Ezreal_0.ico',
+    'Battle Academia': 'https://assets.timfernix.dev/icons/Ezreal_21.ico',
+    'Crystal Rose': 'https://assets.timfernix.dev/icons/Ezreal_91.ico',
+    'Debonair': 'https://assets.timfernix.dev/icons/Ezreal_7.ico',
+    'Dream Of The Red Chamber': 'https://assets.timfernix.dev/icons/Dream_of_the_red_chamber.jpg',
+    'Explorer': 'https://assets.timfernix.dev/icons/Ezreal_4.ico',
+    'Faerie Court': 'https://assets.timfernix.dev/icons/Ezreal_33.ico',
+    'Frosted': 'https://assets.timfernix.dev/icons/Ezreal_3.ico',
+    'HEARTSTEEL': 'https://assets.timfernix.dev/icons/Ezreal_43.ico',
+    'Heavenscale': 'https://assets.timfernix.dev/icons/Ezreal_44.ico',
+    'Hidden Dragon': 'https://assets.timfernix.dev/icons/Hidden_Dragon_Chibi.jpeg',
+    'Ink Keeper': 'https://assets.timfernix.dev/icons/Ink_Keeper_Chibi.jpeg',
+    'Jarro Lightfeather': 'https://assets.timfernix.dev/icons/Ezreal_99.ico',
+    'Love Confession': 'https://assets.timfernix.dev/icons/Love-Confession.ico',
+    'Lovestruck': 'https://assets.timfernix.dev/icons/Ezreal_90.ico',
+    'Masque of the Black Rose': 'https://assets.timfernix.dev/icons/Ezreal_100.ico',
+    'Nottingham': 'https://assets.timfernix.dev/icons/Ezreal_1.ico',
+    'Other': 'https://assets.timfernix.dev/icons/model.png',
+    'Pajama Guardian': 'https://assets.timfernix.dev/icons/Ezreal_20.ico',
+    'Porcelain Protector': 'https://assets.timfernix.dev/icons/Ezreal_25.ico',
+    'Prestige Heavenscale': 'https://assets.timfernix.dev/icons/Prestige_Heavenscale_Icon.jpg',
+    'Prestige Love Confession': 'https://assets.timfernix.dev/icons/Love_Confession_Prestige.jpg',
+    'Prestige Porcelain Protector': 'https://assets.timfernix.dev/icons/Prestige_Porcelain_Protector_Chibi.jpg',
+    'Prestige PsyOps': 'https://assets.timfernix.dev/icons/Prestige_PsyOps_Icon.jpg',
+    'Prestige Select Weather Entity': 'https://assets.timfernix.dev/icons/Prestige_Select_Weather_Entity.png',
+    'Psyops': 'https://assets.timfernix.dev/icons/Ezreal_22.ico',
+    'Pulsefire': 'https://assets.timfernix.dev/icons/Ezreal_5.ico',
+    'SSG': 'https://assets.timfernix.dev/icons/Ezreal_19.ico',
+    'Star Guardian': 'https://assets.timfernix.dev/icons/Ezreal_18.ico',
+    'Striker': 'https://assets.timfernix.dev/icons/Ezreal_2.ico',
+    'TPA': 'https://assets.timfernix.dev/icons/Ezreal_6.ico',
+    'Weather Entity': 'https://assets.timfernix.dev/icons/Weather-Entity.ico'
+};
+const GAME_LOGO_URLS = {
+    'Golden Spatula': 'https://assets.timfernix.dev/icons/golden_spatula.webp',
+    'League of Legends': 'https://assets.timfernix.dev/icons/lol.png',
+    'Legends of Runeterra': 'https://assets.timfernix.dev/icons/lor.png',
+    'Project F': 'https://assets.timfernix.dev/icons/riot.webp',
+    'Riftbound': 'https://assets.timfernix.dev/icons/riftbound.png',
+    'Teamfight Tactics': 'https://assets.timfernix.dev/icons/tft.webp',
+    'Wild Rift': 'https://assets.timfernix.dev/icons/wild_rift.svg'
+};
+const CATEGORY_ICON_URLS = {
+    'Abilities': 'https://assets.timfernix.dev/icons/abilities.png',
+    'Card': 'https://assets.timfernix.dev/icons/card.png',
+    'Concept': 'https://assets.timfernix.dev/icons/concept.png',
+    'Emote': 'https://assets.timfernix.dev/icons/emote.png',
+    'External': 'https://assets.timfernix.dev/icons/external.png',
+    'Face': 'https://assets.timfernix.dev/icons/face.png',
+    'Icon': 'https://assets.timfernix.dev/icons/icon.png',
+    'Loadingscreen': 'https://assets.timfernix.dev/icons/Loadingscreen.png',
+    'Merch': 'https://assets.timfernix.dev/icons/merch.png',
+    'Model': 'https://assets.timfernix.dev/icons/model.png',
+    'Promoart': 'https://assets.timfernix.dev/icons/promoart.png',
+    'Splashart': 'https://assets.timfernix.dev/icons/splashart.png',
+    'Video': 'https://assets.timfernix.dev/icons/video.png'
+};
+
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
 const clearFiltersButton = document.getElementById('clear-filters-btn');
@@ -585,12 +647,32 @@ function createCheckboxes(menuId, options, filterType) {
         return;
     }
 
+    const iconMap = filterType === 'skinlines' ? SKINLINE_ICON_URLS
+        : filterType === 'games' ? GAME_LOGO_URLS
+        : null;
+
     options.forEach(opt => {
         const label = document.createElement('label');
-        label.innerHTML = `<input type="checkbox" value="${opt}"> ${opt}`;
-        const checkbox = label.querySelector('input');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = opt;
         checkbox.checked = activeFilters[filterType].includes(opt);
-        label.querySelector('input').addEventListener('change', (e) => {
+        label.appendChild(checkbox);
+
+        const iconUrl = iconMap ? iconMap[opt] : null;
+        if (iconUrl) {
+            const icon = document.createElement('img');
+            icon.className = 'filter-option-icon';
+            icon.src = iconUrl;
+            icon.alt = '';
+            icon.loading = 'lazy';
+            label.appendChild(icon);
+        }
+
+        label.appendChild(document.createTextNode(opt));
+
+        checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
                 if (!activeFilters[filterType].includes(opt)) {
                     activeFilters[filterType].push(opt);
@@ -714,7 +796,19 @@ function renderGallery(items) {
 
         const categoryBadge = document.createElement('span');
         categoryBadge.className = 'badge';
-        categoryBadge.textContent = item.category;
+        const categoryIconUrl = CATEGORY_ICON_URLS[item.category];
+        if (categoryIconUrl) {
+            categoryBadge.classList.add('badge-icon-only');
+            const categoryIcon = document.createElement('img');
+            categoryIcon.className = 'badge-icon';
+            categoryIcon.src = categoryIconUrl;
+            categoryIcon.alt = item.category;
+            categoryIcon.title = item.category;
+            categoryIcon.loading = 'lazy';
+            categoryBadge.appendChild(categoryIcon);
+        } else {
+            categoryBadge.textContent = item.category;
+        }
 
         header.appendChild(textWrapper);
         header.appendChild(categoryBadge);
