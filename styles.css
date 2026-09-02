@@ -893,7 +893,7 @@ body::before {
 .nav-content {
     position: relative;
     justify-content: flex-start;
-    max-width: 1420px;
+    max-width: none;
     padding: 0 3rem;
     margin-top: -116px;
     min-height: 116px;
@@ -931,7 +931,7 @@ body::before {
 .brand-subline a:hover, .brand-subline a:focus-visible { color: #fff4d6; }
 
 .filter-section {
-    max-width: 1420px;
+    max-width: none;
     padding: 1.2rem 3rem 1.45rem;
 }
 
@@ -999,7 +999,7 @@ select:focus {
 .archive-meta { color: var(--text-muted); font-weight: 600; letter-spacing: 0.04em; }
 .mini-spinner { border-color: rgba(154, 106, 40, 0.25); border-top-color: var(--brass); }
 
-.gallery-wrapper { max-width: 1420px; padding: 0 3rem; margin-top: 2rem; }
+.gallery-wrapper { max-width: none; padding: 0 3rem; margin-top: 2rem; }
 .grid-layout { gap: 1.1rem; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); }
 
 .card {
@@ -1287,24 +1287,24 @@ body::before { display: none; }
     z-index: 1;
     display: flex;
     align-items: center;
-    max-width: 1420px;
+    max-width: none;
     height: 174px;
     min-height: 0;
     margin: 0 auto;
-    padding: 0 3rem;
+    padding: 0 max(calc(3vw + 24px), 3rem);
 }
 
 .masthead + .nav-content .brand-block {
-    transform: translate(14px, 2px);
+    transform: translateY(2px);
 }
 
 @media (max-width: 768px) {
     .masthead + .nav-content {
         height: 150px;
-        padding: 0 1.2rem;
+        padding: 0 calc(1rem + 18px);
     }
 
     .masthead + .nav-content .brand-block {
-        transform: translate(8px, 2px);
+        transform: translateY(2px);
     }
 }
