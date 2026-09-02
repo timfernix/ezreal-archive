@@ -43,7 +43,7 @@
         </div>
         <div class="filter-section">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search tags, skins..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="Search skins, titles, descriptions..." autocomplete="off">
             </div>
             <button id="mobile-filter-toggle" class="mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="filter-controls">
                 Filters
@@ -60,6 +60,10 @@
                 <div class="filter-group">
                     <button class="filter-toggle" data-target="game-menu">Games ▾</button>
                     <div id="game-menu" class="dropdown-menu"></div>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-toggle" data-target="tag-menu">Tags ▾</button>
+                    <div id="tag-menu" class="dropdown-menu"></div>
                 </div>
                 <div class="filter-group">
                     <select id="sortSelect" class="sort-select">

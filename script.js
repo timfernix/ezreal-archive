@@ -8,7 +8,7 @@ const EAGER_LOAD_COUNT = 15;
 const PREVIEW_MARGIN = '500px 0px';
 const SEARCH_DEBOUNCE_MS = 350;
 let allMediaItems = [];
-let activeFilters = { skinlines: [], categories: [], games: [] };
+let activeFilters = { skinlines: [], categories: [], games: [], tags: [] };
 let currentSort = 'newest';
 let currentLightboxItem = null;
 let serverOffset = 0;
@@ -18,7 +18,7 @@ let totalAvailableItems = null;
 let catalogVersion = null;
 let catalogGeneratedAt = null;
 let deferInitialGalleryRender = false;
-let allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
+let allAvailableFilterOptions = { skinlines: [], categories: [], games: [], tags: [] };
 let searchDebounceTimer = null;
 
 // Icons
@@ -284,6 +284,7 @@ function applyUrlStateToInputs() {
     const skinlines = params.getAll('skinline');
     const categories = params.getAll('category');
     const games = params.getAll('game');
+    const tags = params.getAll('tag');
 
     searchInput.value = searchFromUrl;
 
@@ -298,13 +299,15 @@ function applyUrlStateToInputs() {
     activeFilters.skinlines = skinlines.filter(value => allAvailableFilterOptions.skinlines.includes(value));
     activeFilters.categories = categories.filter(value => allAvailableFilterOptions.categories.includes(value));
     activeFilters.games = games.filter(value => allAvailableFilterOptions.games.includes(value));
+    activeFilters.tags = tags.filter(value => allAvailableFilterOptions.tags.includes(value));
 }
 
 function syncCheckboxUIWithActiveFilters() {
     const groups = [
         { menuId: 'skinline-menu', key: 'skinlines' },
         { menuId: 'cat-menu', key: 'categories' },
-        { menuId: 'game-menu', key: 'games' }
+        { menuId: 'game-menu', key: 'games' },
+        { menuId: 'tag-menu', key: 'tags' }
     ];
 
     groups.forEach(group => {
@@ -320,7 +323,7 @@ function syncCheckboxUIWithActiveFilters() {
 }
 
 function clearAllFilters() {
-    activeFilters = { skinlines: [], categories: [], games: [] };
+    activeFilters = { skinlines: [], categories: [], games: [], tags: [] };
     searchInput.value = '';
     currentSort = 'newest';
 
@@ -351,6 +354,7 @@ function buildShareableUrl(item, useCustomBase = false) {
     activeFilters.skinlines.forEach(value => url.searchParams.append('skinline', value));
     activeFilters.categories.forEach(value => url.searchParams.append('category', value));
     activeFilters.games.forEach(value => url.searchParams.append('game', value));
+    activeFilters.tags.forEach(value => url.searchParams.append('tag', value));
 
     if (item) {
         url.searchParams.set('asset', getAssetShareId(item));
@@ -585,6 +589,7 @@ async function init() {
         createCheckboxes('skinline-menu', allAvailableFilterOptions.skinlines, 'skinlines');
         createCheckboxes('cat-menu', allAvailableFilterOptions.categories, 'categories');
         createCheckboxes('game-menu', allAvailableFilterOptions.games, 'games');
+        createCheckboxes('tag-menu', allAvailableFilterOptions.tags, 'tags');
         syncCheckboxUIWithActiveFilters();
 
         serverOffset = PAGE_SIZE;
@@ -702,6 +707,7 @@ function refreshFilterMenus() {
     activeFilters.skinlines = activeFilters.skinlines.filter(value => allAvailableFilterOptions.skinlines.includes(value));
     activeFilters.categories = activeFilters.categories.filter(value => allAvailableFilterOptions.categories.includes(value));
     activeFilters.games = activeFilters.games.filter(value => allAvailableFilterOptions.games.includes(value));
+    activeFilters.tags = activeFilters.tags.filter(value => allAvailableFilterOptions.tags.includes(value));
 }
 
 async function fetchFilterOptions() {
@@ -730,7 +736,10 @@ async function fetchFilterOptions() {
             allAvailableFilterOptions = {
                 skinlines: Array.isArray(data.filters.skinlines) ? data.filters.skinlines : [],
                 categories: Array.isArray(data.filters.categories) ? data.filters.categories : [],
-                games: Array.isArray(data.filters.games) ? data.filters.games : []
+                games: Array.isArray(data.filters.games) ? data.filters.games : [],
+                tags: Array.isArray(data.filters.tags)
+                    ? data.filters.tags
+                    : [...new Set(catalogItems.flatMap(item => item.tags))].sort((left, right) => left.localeCompare(right))
             };
             console.log('Filter options set:', allAvailableFilterOptions);
         } else {
@@ -755,7 +764,8 @@ function applyFilters(options = {}) {
             return (
                 (activeFilters.skinlines.length === 0 || activeFilters.skinlines.includes(item.skinline)) &&
                 (activeFilters.categories.length === 0 || activeFilters.categories.includes(item.category)) &&
-                (activeFilters.games.length === 0 || activeFilters.games.includes(item.game))
+                (activeFilters.games.length === 0 || activeFilters.games.includes(item.game)) &&
+                (activeFilters.tags.length === 0 || item.tags.some(tag => activeFilters.tags.includes(tag)))
             );
         })
         .sort((left, right) => {
