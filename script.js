@@ -95,6 +95,7 @@ const paginationControls = document.getElementById('pagination-controls');
 const loadMoreButton = document.getElementById('load-more-btn');
 const paginationStatus = document.getElementById('pagination-status');
 const autoLoadSentinel = document.getElementById('auto-load-sentinel');
+const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
 
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
@@ -601,6 +602,14 @@ async function init() {
                 document.getElementById(e.target.dataset.target).classList.toggle('show');
             });
         });
+
+        if (mobileFilterToggle) {
+            mobileFilterToggle.addEventListener('click', () => {
+                const isExpanded = mobileFilterToggle.getAttribute('aria-expanded') === 'true';
+                mobileFilterToggle.setAttribute('aria-expanded', String(!isExpanded));
+                document.getElementById('filter-controls').classList.toggle('mobile-expanded', !isExpanded);
+            });
+        }
 
         if (clearFiltersButton) {
             clearFiltersButton.addEventListener('click', clearAllFilters);
