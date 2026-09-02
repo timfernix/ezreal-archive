@@ -6,7 +6,6 @@ const SHARE_BASE_URL = 'https://ezreal.timfernix.dev/';
 const PAGE_SIZE = 50;
 const EAGER_LOAD_COUNT = 15;
 const PREVIEW_MARGIN = '500px 0px';
-const MAX_AUTO_FETCH_ITEMS = 1000; // cap auto-loaded pages while searching/filtering to avoid scanning the whole archive
 const SEARCH_DEBOUNCE_MS = 350;
 let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [] };
@@ -16,9 +15,10 @@ let serverOffset = 0;
 let hasMoreServerData = true;
 let isFetchingPage = false;
 let totalAvailableItems = null;
+let catalogVersion = null;
+let catalogGeneratedAt = null;
 let deferInitialGalleryRender = false;
 let allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
-let searchAutoFetchLimitNotified = false;
 let searchDebounceTimer = null;
 
 // Icons
@@ -239,19 +239,22 @@ function updateArchiveMeta(items) {
         return;
     }
 
-    const syncedAt = new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit'
-    });
-
-    const loadedItems = items.length;
-    const totalSuffix = totalAvailableItems !== null ? ` / ${totalAvailableItems}` : '';
+    const generatedAt = catalogGeneratedAt
+        ? new Date(catalogGeneratedAt).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+        : 'Unknown';
+    const version = catalogVersion ? catalogVersion.slice(0, 12) : 'Unknown';
+    const totalItems = totalAvailableItems ?? items.length;
 
     if (archiveMetaText) {
-        archiveMetaText.textContent = `Synced: ${syncedAt} | Loaded: ${loadedItems}${totalSuffix}`;
+        archiveMetaText.textContent = `Catalog: ${version} | Generated: ${generatedAt} | Items: ${totalItems}`;
     } else {
-        archiveMeta.textContent = `Synced: ${syncedAt} | Loaded: ${loadedItems}${totalSuffix}`;
+        archiveMeta.textContent = `Catalog: ${version} | Generated: ${generatedAt} | Items: ${totalItems}`;
     }
 
     updateArchiveMetaSpinner();
@@ -319,7 +322,6 @@ function clearAllFilters() {
     activeFilters = { skinlines: [], categories: [], games: [] };
     searchInput.value = '';
     currentSort = 'newest';
-    searchAutoFetchLimitNotified = false;
 
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
@@ -587,7 +589,6 @@ async function init() {
         serverOffset = PAGE_SIZE;
 
         searchInput.addEventListener('input', () => {
-            searchAutoFetchLimitNotified = false;
             clearTimeout(searchDebounceTimer);
             searchDebounceTimer = setTimeout(() => reloadFromServer(), SEARCH_DEBOUNCE_MS);
         });
@@ -680,7 +681,6 @@ function createCheckboxes(menuId, options, filterType) {
             } else {
                 activeFilters[filterType] = activeFilters[filterType].filter(item => item !== opt);
             }
-            searchAutoFetchLimitNotified = false;
             reloadFromServer(); // Trigger filtering whenever a box is toggled
         });
         menu.appendChild(label);
@@ -703,8 +703,8 @@ async function fetchFilterOptions() {
         }
 
         const manifest = await manifestResponse.json();
-    const manifestUrl = new URL(CATALOG_MANIFEST_URL, window.location.origin);
-    const catalogUrl = new URL(manifest.catalogUrl, manifestUrl).toString();
+        const manifestUrl = new URL(CATALOG_MANIFEST_URL, window.location.origin);
+        const catalogUrl = new URL(manifest.catalogUrl, manifestUrl).toString();
         const response = await fetch(catalogUrl);
         if (!response.ok) {
             throw new Error(`Catalog request failed: ${response.status}`);
@@ -716,6 +716,8 @@ async function fetchFilterOptions() {
 
         if (data?.filters?.skinlines && data.filters.categories && data.filters.games) {
             allMediaItems = catalogItems;
+            catalogVersion = manifest.version || data.version || null;
+            catalogGeneratedAt = manifest.generatedAt || null;
             allAvailableFilterOptions = {
                 skinlines: Array.isArray(data.filters.skinlines) ? data.filters.skinlines : [],
                 categories: Array.isArray(data.filters.categories) ? data.filters.categories : [],
@@ -787,7 +789,6 @@ async function reloadFromServer(options = {}) {
     const { syncUrl = true } = options;
 
     serverOffset = PAGE_SIZE;
-    searchAutoFetchLimitNotified = false;
 
     applyFilters({ syncUrl });
 }
@@ -1044,15 +1045,6 @@ function setupAutoLoadObserver() {
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (!entry.isIntersecting || isFetchingPage || !hasMoreServerData) {
-                return;
-            }
-
-            // Bound automatic scroll-loading so an open-ended browsing session can't pull in the whole archive.
-            if (serverOffset >= MAX_AUTO_FETCH_ITEMS) {
-                if (!searchAutoFetchLimitNotified) {
-                    searchAutoFetchLimitNotified = true;
-                    showToast('Auto-load paused — click "Load 50 more" to keep going');
-                }
                 return;
             }
 
