@@ -1,4 +1,6 @@
-const API_URL = '/api/skins';
+const CATALOG_MANIFEST_URL = ['127.0.0.1', 'localhost'].includes(window.location.hostname)
+    ? '/catalog/catalog-manifest.json'
+    : 'https://assets.timfernix.dev/catalog/catalog-manifest.json';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 const SHARE_BASE_URL = 'https://ezreal.timfernix.dev/';
 const PAGE_SIZE = 50;
@@ -505,9 +507,9 @@ function openLightbox(item, options = {}) {
     originalLink.target = '_blank';
     originalLink.rel = 'noopener noreferrer';
     originalLink.textContent = isExternal ? 'Open External Link' : 'View Original';
-    
+
     document.getElementById('lightbox-title').textContent = item.title;
-    
+
     // Create details section
     detailsDiv.innerHTML = `
         <div class="detail-item">
@@ -544,7 +546,7 @@ function openLightbox(item, options = {}) {
             <span class="detail-value">${item.platform}</span>
         </div>` : ''}
     `;
-    
+
     if (item.tags.length > 0) {
         tagsDiv.innerHTML = '<div class="tags-label">Tags:</div>';
         const tagContainer = document.createElement('div');
@@ -559,7 +561,7 @@ function openLightbox(item, options = {}) {
     } else {
         tagsDiv.innerHTML = '';
     }
-    
+
     lightbox.classList.remove('hidden');
 
     if (syncUrl) {
@@ -572,7 +574,7 @@ async function init() {
         const initialAssetId = getUrlParams().get('asset');
         deferInitialGalleryRender = Boolean(initialAssetId);
 
-        // Fetch all available filter options first (cheap, single DB query)
+        // Fetch the full static catalog once; all later gallery operations are local.
         await fetchFilterOptions();
 
         // Restore search/sort/filters from the URL before the first page fetch so it's queried server-side from the start.
@@ -582,9 +584,7 @@ async function init() {
         createCheckboxes('game-menu', allAvailableFilterOptions.games, 'games');
         syncCheckboxUIWithActiveFilters();
 
-        // Then start pagination (already filtered/sorted server-side by the state restored above)
-        await fetchNextPage();
-        updateArchiveMeta(allMediaItems);
+        serverOffset = PAGE_SIZE;
 
         searchInput.addEventListener('input', () => {
             searchAutoFetchLimitNotified = false;
@@ -612,7 +612,6 @@ async function init() {
         setupAutoLoadObserver();
 
         if (initialAssetId) {
-            await ensureAssetAvailable(initialAssetId);
             openAssetFromUrlParam(initialAssetId);
             if (!currentLightboxItem) {
                 deferInitialGalleryRender = false;
@@ -698,42 +697,84 @@ function refreshFilterMenus() {
 
 async function fetchFilterOptions() {
     try {
-        const response = await fetch('/api/filters');
+        const manifestResponse = await fetch(CATALOG_MANIFEST_URL);
+        if (!manifestResponse.ok) {
+            throw new Error(`Manifest request failed: ${manifestResponse.status}`);
+        }
+
+        const manifest = await manifestResponse.json();
+    const manifestUrl = new URL(CATALOG_MANIFEST_URL, window.location.origin);
+    const catalogUrl = new URL(manifest.catalogUrl, manifestUrl).toString();
+        const response = await fetch(catalogUrl);
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            throw new Error(`Catalog request failed: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Filter options fetched:', data);
-        
-        if (data && data.skinlines && data.categories && data.games) {
+        const catalogItems = Array.isArray(data?.items) ? data.items.map(mapFlatItemToMediaItem).filter(item => item.url) : [];
+        console.log('Catalog fetched:', { items: catalogItems.length, version: manifest.version });
+
+        if (data?.filters?.skinlines && data.filters.categories && data.filters.games) {
+            allMediaItems = catalogItems;
             allAvailableFilterOptions = {
-                skinlines: Array.isArray(data.skinlines) ? data.skinlines : [],
-                categories: Array.isArray(data.categories) ? data.categories : [],
-                games: Array.isArray(data.games) ? data.games : []
+                skinlines: Array.isArray(data.filters.skinlines) ? data.filters.skinlines : [],
+                categories: Array.isArray(data.filters.categories) ? data.filters.categories : [],
+                games: Array.isArray(data.filters.games) ? data.filters.games : []
             };
             console.log('Filter options set:', allAvailableFilterOptions);
         } else {
-            console.warn('Invalid filter response structure:', data);
+            throw new Error('Invalid catalog response structure');
         }
     } catch (err) {
-        console.error('Failed to fetch filter options:', err);
-        // Fallback: filters will be populated from items as they load
-        allAvailableFilterOptions = { skinlines: [], categories: [], games: [] };
+        console.error('Failed to fetch catalog:', err);
+        throw err;
     }
 }
 
 // Renders whatever is currently in allMediaItems (already filtered/sorted server-side).
 function applyFilters(options = {}) {
     const { syncUrl = true, deferRender = false } = options;
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const matchingItems = allMediaItems
+        .filter(item => {
+            if (searchTerm && !item.searchString.includes(searchTerm)) {
+                return false;
+            }
+
+            return (
+                (activeFilters.skinlines.length === 0 || activeFilters.skinlines.includes(item.skinline)) &&
+                (activeFilters.categories.length === 0 || activeFilters.categories.includes(item.category)) &&
+                (activeFilters.games.length === 0 || activeFilters.games.includes(item.game))
+            );
+        })
+        .sort((left, right) => {
+            switch (currentSort) {
+                case 'oldest':
+                    return Number(left.releaseYear) - Number(right.releaseYear) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+                case 'name-asc':
+                    return left.title.localeCompare(right.title);
+                case 'skinline-asc':
+                    return left.skinline.localeCompare(right.skinline) || left.title.localeCompare(right.title);
+                case 'none':
+                    return 0;
+                case 'newest':
+                default:
+                    return Number(right.releaseYear) - Number(left.releaseYear) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+            }
+        });
+
+    totalAvailableItems = matchingItems.length;
+    const displayedItems = matchingItems.slice(0, serverOffset);
+    hasMoreServerData = displayedItems.length < matchingItems.length;
 
     if (deferRender) {
         container.innerHTML = '';
         noResultsIndicator.classList.add('hidden');
     } else {
-        renderGallery(allMediaItems);
+        renderGallery(displayedItems);
     }
 
+    updateArchiveMeta(displayedItems);
     updatePaginationControls();
 
     if (syncUrl) {
@@ -745,13 +786,9 @@ function applyFilters(options = {}) {
 async function reloadFromServer(options = {}) {
     const { syncUrl = true } = options;
 
-    allMediaItems = [];
-    serverOffset = 0;
-    hasMoreServerData = true;
-    totalAvailableItems = null;
+    serverOffset = PAGE_SIZE;
     searchAutoFetchLimitNotified = false;
 
-    await fetchNextPage();
     applyFilters({ syncUrl });
 }
 
@@ -782,7 +819,7 @@ function renderGallery(items) {
 
         const header = document.createElement('div');
         header.className = 'card-header';
-        
+
         const textWrapper = document.createElement('div');
         textWrapper.className = 'card-text-wrap';
         const title = document.createElement('h3');
@@ -791,7 +828,7 @@ function renderGallery(items) {
         const game = document.createElement('div');
         game.className = 'card-game';
         game.textContent = item.game !== 'Generic' ? item.game : '';
-        
+
         textWrapper.appendChild(title);
         textWrapper.appendChild(game);
 
@@ -961,35 +998,6 @@ function updatePaginationControls() {
     }
 }
 
-function mapSkinAssetToMediaItem(skin, asset) {
-    const safeTags = Array.isArray(asset.tags) ? asset.tags.filter(Boolean) : [];
-    const skinName = resolveSkinName(skin);
-    const title = resolveAssetTitle(asset, skinName);
-    const skinline = resolveSkinline(skin);
-    const releaseYear = resolveReleaseYear(skin, asset);
-    const skinReleaseYear = resolveSkinReleaseYear(skin);
-    const source = normalizeValue(asset.source) || 'asset';
-    const platform = normalizeValue(asset.platform) || '';
-    const description = normalizeValue(skin.description) || '';
-
-    return {
-        title,
-        skinName,
-        description,
-        type: normalizeValue(asset.type) || 'image',
-        url: normalizeValue(asset.url) || '',
-        category: normalizeValue(asset.category) || 'Uncategorized',
-        game: normalizeValue(asset.game) || 'Generic',
-        source,
-        platform,
-        skinline,
-        releaseYear,
-        skinReleaseYear,
-        tags: safeTags,
-        searchString: `${title} ${skinName} ${skinline} ${description} ${asset.category || ''} ${asset.game || ''} ${source} ${platform} ${releaseYear} ${skinReleaseYear} ${safeTags.join(' ')}`.toLowerCase()
-    };
-}
-
 function mapFlatItemToMediaItem(item) {
     const safeTags = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];
     const skinName = normalizeValue(item.skinName) || 'Unknown Skin';
@@ -1019,69 +1027,12 @@ function mapFlatItemToMediaItem(item) {
     };
 }
 
-function flattenSkinsToMediaItems(skins) {
-    const mediaItems = [];
-
-    skins.forEach(skin => {
-        if (!Array.isArray(skin.media)) {
-            return;
-        }
-
-        skin.media.forEach(asset => {
-            mediaItems.push(mapSkinAssetToMediaItem(skin, asset));
-        });
-    });
-
-    return mediaItems;
-}
-
-function normalizeApiPayload(data, limit, offset) {
-    if (Array.isArray(data)) {
-        return {
-            items: flattenSkinsToMediaItems(data),
-            hasMore: false,
-            nextOffset: offset,
-            total: null,
-            backendSupportsPaging: false
-        };
-    }
-
-    const payload = data && typeof data === 'object' ? data : {};
-    const candidateItems = Array.isArray(payload.items)
-        ? payload.items
-        : Array.isArray(payload.skins)
-            ? payload.skins
-            : Array.isArray(payload.data)
-                ? payload.data
-                : [];
-
-    const hasSkinShape = candidateItems.some(item => Array.isArray(item.media));
-    const normalizedItems = hasSkinShape
-        ? flattenSkinsToMediaItems(candidateItems)
-        : candidateItems.map(mapFlatItemToMediaItem).filter(item => item.url);
-
-    const nextOffsetFromPayload = Number.isInteger(payload.nextOffset)
-        ? payload.nextOffset
-        : offset + normalizedItems.length;
-    const hasMoreFromPayload = typeof payload.hasMore === 'boolean'
-        ? payload.hasMore
-        : normalizedItems.length >= limit;
-
-    return {
-        items: normalizedItems,
-        hasMore: hasMoreFromPayload,
-        nextOffset: nextOffsetFromPayload,
-        total: Number.isInteger(payload.total) ? payload.total : null,
-        backendSupportsPaging: true
-    };
-}
-
 async function loadNextPage() {
     if (isFetchingPage || !hasMoreServerData) {
         return;
     }
 
-    await fetchNextPage();
+    serverOffset += PAGE_SIZE;
     applyFilters();
 }
 
@@ -1097,7 +1048,7 @@ function setupAutoLoadObserver() {
             }
 
             // Bound automatic scroll-loading so an open-ended browsing session can't pull in the whole archive.
-            if (allMediaItems.length >= MAX_AUTO_FETCH_ITEMS) {
+            if (serverOffset >= MAX_AUTO_FETCH_ITEMS) {
                 if (!searchAutoFetchLimitNotified) {
                     searchAutoFetchLimitNotified = true;
                     showToast('Auto-load paused — click "Load 50 more" to keep going');
@@ -1110,109 +1061,6 @@ function setupAutoLoadObserver() {
     }, { rootMargin: '400px 0px' });
 
     observer.observe(autoLoadSentinel);
-}
-
-function buildSkinsRequestUrl() {
-    const requestUrl = new URL(API_URL, window.location.origin);
-    requestUrl.searchParams.set('limit', String(PAGE_SIZE));
-    requestUrl.searchParams.set('offset', String(serverOffset));
-
-    const searchTerm = searchInput.value.trim();
-    if (searchTerm) {
-        requestUrl.searchParams.set('q', searchTerm);
-    }
-
-    if (currentSort) {
-        requestUrl.searchParams.set('sort', currentSort);
-    }
-
-    activeFilters.skinlines.forEach(value => requestUrl.searchParams.append('skinline', value));
-    activeFilters.categories.forEach(value => requestUrl.searchParams.append('category', value));
-    activeFilters.games.forEach(value => requestUrl.searchParams.append('game', value));
-
-    return requestUrl;
-}
-
-async function fetchNextPage() {
-    if (isFetchingPage || !hasMoreServerData) {
-        return;
-    }
-
-    isFetchingPage = true;
-    updatePaginationControls();
-    updateArchiveMetaSpinner();
-
-    try {
-        const requestUrl = buildSkinsRequestUrl();
-
-        const response = await fetch(requestUrl.toString());
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-        const data = await response.json();
-        const normalized = normalizeApiPayload(data, PAGE_SIZE, serverOffset);
-
-        const seenIds = new Set(allMediaItems.map(item => getAssetShareId(item)));
-        const newItems = normalized.items.filter(item => {
-            const id = getAssetShareId(item);
-            if (seenIds.has(id)) {
-                return false;
-            }
-            seenIds.add(id);
-            return true;
-        });
-
-        allMediaItems.push(...newItems);
-        // total is only sent for the first page; later pages omit it to avoid re-counting the same query.
-        if (normalized.total !== null) {
-            totalAvailableItems = normalized.total;
-        }
-        serverOffset = normalized.nextOffset;
-        hasMoreServerData = normalized.hasMore;
-
-        updateArchiveMeta(allMediaItems);
-    } catch (error) {
-        console.error('Page fetch failed:', error);
-        showToast('Failed to load results — please try again');
-    } finally {
-        isFetchingPage = false;
-        updatePaginationControls();
-        updateArchiveMetaSpinner();
-    }
-}
-
-async function ensureAssetAvailable(assetId) {
-    const existing = allMediaItems.find(media => getAssetShareId(media) === assetId);
-    if (existing) {
-        return;
-    }
-
-    // Try the dedicated single-asset endpoint first (much cheaper than paging)
-    try {
-        const assetUrl = new URL('/api/asset', window.location.origin);
-        assetUrl.searchParams.set('id', assetId);
-        const response = await fetch(assetUrl.toString());
-
-        if (response.ok) {
-            const raw = await response.json();
-            if (raw && !raw.error) {
-                const item = mapFlatItemToMediaItem(raw);
-                const alreadyIn = allMediaItems.some(m => getAssetShareId(m) === getAssetShareId(item));
-                if (!alreadyIn) {
-                    allMediaItems.unshift(item);
-                    refreshFilterMenus();
-                }
-                return;
-            }
-        }
-    } catch {
-    }
-
-    // Fallback
-    while (!allMediaItems.find(media => getAssetShareId(media) === assetId) && hasMoreServerData) {
-        await fetchNextPage({ forceLegacyFullFetch: false });
-        refreshFilterMenus();
-    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
