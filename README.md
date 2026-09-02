@@ -16,3 +16,9 @@ Ezreal Media Archive is a searchable gallery that helps fans browse official Ezr
 Contributions are always welcome.
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening issues or pull requests. <3
+
+## Legal Info
+
+League of Legends and all related assets are trademarks of Riot Games, Inc.
+This project was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games.
+Riot Games does not endorse or sponsor this project.
