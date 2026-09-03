@@ -65,6 +65,7 @@ const GAME_LOGO_URLS = {
     'Project F': 'https://assets.timfernix.dev/icons/riot.webp',
     'Riftbound': 'https://assets.timfernix.dev/icons/riftbound.png',
     'Teamfight Tactics': 'https://assets.timfernix.dev/icons/tft.webp',
+    'Valorant' : 'https://assets.timfernix.dev/icons/valorant.png',
     'Wild Rift': 'https://assets.timfernix.dev/icons/wild_rift.svg'
 };
 const CATEGORY_ICON_URLS = {
@@ -81,6 +82,9 @@ const CATEGORY_ICON_URLS = {
     'Promoart': 'https://assets.timfernix.dev/icons/promoart.png',
     'Splashart': 'https://assets.timfernix.dev/icons/splashart.png',
     'Video': 'https://assets.timfernix.dev/icons/video.png'
+};
+const CATEGORY_DISPLAY_NAMES = {
+    'Promoart': 'Promo/Artwork'
 };
 
 const container = document.getElementById('gallery-container');
@@ -533,7 +537,7 @@ function openLightbox(item, options = {}) {
         </div>
         <div class="detail-item">
             <span class="detail-label">Category:</span>
-            <span class="detail-value">${item.category}</span>
+            <span class="detail-value">${CATEGORY_DISPLAY_NAMES[item.category] || item.category}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Asset Release Year:</span>
@@ -685,7 +689,7 @@ function createCheckboxes(menuId, options, filterType) {
             label.appendChild(icon);
         }
 
-        label.appendChild(document.createTextNode(opt));
+        label.appendChild(document.createTextNode(CATEGORY_DISPLAY_NAMES[opt] || opt));
 
         checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
@@ -860,12 +864,12 @@ function renderGallery(items) {
             const categoryIcon = document.createElement('img');
             categoryIcon.className = 'badge-icon';
             categoryIcon.src = categoryIconUrl;
-            categoryIcon.alt = item.category;
-            categoryIcon.title = item.category;
+            categoryIcon.alt = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
+            categoryIcon.title = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
             categoryIcon.loading = 'lazy';
             categoryBadge.appendChild(categoryIcon);
         } else {
-            categoryBadge.textContent = item.category;
+            categoryBadge.textContent = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
         }
 
         header.appendChild(textWrapper);
