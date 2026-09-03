@@ -489,7 +489,7 @@ function openLightbox(item, options = {}) {
         technicalDiv.innerHTML = `
             <div class="detail-item">
                 <span class="detail-label">ID:</span>
-                <span class="detail-value">${item.id || 'Unknown'}</span>
+                <span class="detail-value">${item.databaseId || 'Unknown'}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Type:</span>
@@ -1088,6 +1088,7 @@ function mapFlatItemToMediaItem(item) {
 
     return {
         id: normalizeValue(item.id) || '',
+        databaseId: item.databaseId ?? '',
         title,
         skinName,
         description,
