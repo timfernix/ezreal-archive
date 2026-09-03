@@ -468,6 +468,18 @@ function openLightbox(item, options = {}) {
         existingExternalHint.remove();
     }
 
+    lightboxImg.classList.remove('hidden');
+    lightboxImg.removeAttribute('src');
+    lightboxImg.alt = 'Full view';
+    lightboxImg.onload = null;
+    lightboxImg.onerror = () => {
+        lightboxImg.classList.add('hidden');
+        const errorHint = document.createElement('div');
+        errorHint.className = 'external-link-preview';
+        errorHint.textContent = 'Preview could not be loaded';
+        mediaContainer.appendChild(errorHint);
+    };
+
     if (isExternal) {
         const previewImageUrl = getExternalPreviewImageUrl(item);
         lightboxImg.classList.add('hidden');
@@ -511,6 +523,7 @@ function openLightbox(item, options = {}) {
         video.style.maxHeight = '100%';
         mediaContainer.appendChild(video);
     } else {
+        lightboxImg.classList.remove('hidden');
         lightboxImg.src = assetUrl;
     }
 
