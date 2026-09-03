@@ -65,7 +65,7 @@ const GAME_LOGO_URLS = {
     'Project F': 'https://assets.timfernix.dev/icons/riot.webp',
     'Riftbound': 'https://assets.timfernix.dev/icons/riftbound.png',
     'Teamfight Tactics': 'https://assets.timfernix.dev/icons/tft.webp',
-    'Valorant' : 'https://assets.timfernix.dev/icons/valorant.png',
+    'Valorant' : 'https://assets.timfernix.dev/icons/valorant.svg',
     'Wild Rift': 'https://assets.timfernix.dev/icons/wild_rift.svg'
 };
 const CATEGORY_ICON_URLS = {
