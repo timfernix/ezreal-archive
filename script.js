@@ -86,6 +86,7 @@ const CATEGORY_ICON_URLS = {
 const CATEGORY_DISPLAY_NAMES = {
     'Promoart': 'Promo/Artwork'
 };
+const CHROMA_ICON_URL = 'https://assets.timfernix.dev/icons/chroma.png';
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -292,7 +293,7 @@ function applyUrlStateToInputs() {
 
     searchInput.value = searchFromUrl;
 
-    if (sortFromUrl && ['newest', 'oldest', 'name-asc', 'skinline-asc', 'none'].includes(sortFromUrl)) {
+    if (sortFromUrl && ['newest', 'oldest', 'skinline-asc', 'none'].includes(sortFromUrl)) {
         currentSort = sortFromUrl;
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
@@ -449,6 +450,7 @@ function openLightbox(item, options = {}) {
     const isExternal = isExternalItem(item);
     const detailsDiv = document.getElementById('lightbox-details');
     const tagsDiv = document.getElementById('lightbox-tags');
+    const technicalDiv = document.getElementById('lightbox-technical');
 
     currentLightboxItem = item;
 
@@ -473,12 +475,36 @@ function openLightbox(item, options = {}) {
     lightboxImg.alt = 'Full view';
     lightboxImg.onload = null;
     lightboxImg.onerror = () => {
+        if (currentLightboxItem !== item) {
+            return;
+        }
         lightboxImg.classList.add('hidden');
         const errorHint = document.createElement('div');
         errorHint.className = 'external-link-preview';
         errorHint.textContent = 'Preview could not be loaded';
         mediaContainer.appendChild(errorHint);
     };
+
+    if (technicalDiv) {
+        technicalDiv.innerHTML = `
+            <div class="detail-item">
+                <span class="detail-label">ID:</span>
+                <span class="detail-value">${item.id || 'Unknown'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Type:</span>
+                <span class="detail-value">${item.type}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Source:</span>
+                <span class="detail-value">${item.source}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Resolution:</span>
+                <span class="detail-value" data-resolution>${isExternal && item.platform === 'youtube' ? 'Not available' : 'Loading...'}</span>
+            </div>
+        `;
+    }
 
     if (isExternal) {
         const previewImageUrl = getExternalPreviewImageUrl(item);
@@ -502,6 +528,7 @@ function openLightbox(item, options = {}) {
             lightboxImg.classList.remove('hidden');
             lightboxImg.src = previewImageUrl;
             lightboxImg.alt = item.title;
+            lightboxImg.onload = () => updateLightboxResolution(item, lightboxImg.naturalWidth, lightboxImg.naturalHeight);
         }
 
         if (!mediaContainer.querySelector('iframe') && !previewImageUrl) {
@@ -521,9 +548,13 @@ function openLightbox(item, options = {}) {
         video.controls = true;
         video.style.maxWidth = '100%';
         video.style.maxHeight = '100%';
+        video.addEventListener('loadedmetadata', () => {
+            updateLightboxResolution(item, video.videoWidth, video.videoHeight);
+        }, { once: true });
         mediaContainer.appendChild(video);
     } else {
         lightboxImg.classList.remove('hidden');
+        lightboxImg.onload = () => updateLightboxResolution(item, lightboxImg.naturalWidth, lightboxImg.naturalHeight);
         lightboxImg.src = assetUrl;
     }
 
@@ -556,14 +587,6 @@ function openLightbox(item, options = {}) {
             <span class="detail-label">Asset Release Year:</span>
             <span class="detail-value">${item.releaseYear}</span>
         </div>
-        <div class="detail-item">
-            <span class="detail-label">Type:</span>
-            <span class="detail-value">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Source:</span>
-            <span class="detail-value">${item.source === 'external_link' ? 'External Link' : 'Asset'}</span>
-        </div>
         ${item.platform ? `
         <div class="detail-item">
             <span class="detail-label">Platform:</span>
@@ -575,7 +598,7 @@ function openLightbox(item, options = {}) {
         tagsDiv.innerHTML = '<div class="tags-label">Tags:</div>';
         const tagContainer = document.createElement('div');
         tagContainer.className = 'lightbox-tags';
-        item.tags.forEach(tag => {
+        item.tags.filter(tag => tag !== 'Chroma').forEach(tag => {
             const tagSpan = document.createElement('span');
             tagSpan.className = 'lightbox-tag';
             tagSpan.textContent = tag;
@@ -590,6 +613,17 @@ function openLightbox(item, options = {}) {
 
     if (syncUrl) {
         syncUrlWithState();
+    }
+}
+
+function updateLightboxResolution(item, width, height) {
+    if (currentLightboxItem !== item) {
+        return;
+    }
+
+    const resolutionElement = document.querySelector('[data-resolution]');
+    if (resolutionElement && width && height) {
+        resolutionElement.textContent = `${width} x ${height}px`;
     }
 }
 
@@ -789,8 +823,6 @@ function applyFilters(options = {}) {
             switch (currentSort) {
                 case 'oldest':
                     return Number(left.releaseYear) - Number(right.releaseYear) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
-                case 'name-asc':
-                    return left.title.localeCompare(right.title);
                 case 'skinline-asc':
                     return left.skinline.localeCompare(right.skinline) || left.title.localeCompare(right.title);
                 case 'none':
@@ -862,37 +894,35 @@ function renderGallery(items) {
         const title = document.createElement('h3');
         title.className = 'card-title';
         title.textContent = item.title;
-        const game = document.createElement('div');
-        game.className = 'card-game';
-        game.textContent = item.game !== 'Generic' ? item.game : '';
-
         textWrapper.appendChild(title);
-        textWrapper.appendChild(game);
 
-        const categoryBadge = document.createElement('span');
-        categoryBadge.className = 'badge';
+        const iconPanel = document.createElement('div');
+        iconPanel.className = 'card-meta-icons';
         const categoryIconUrl = CATEGORY_ICON_URLS[item.category];
         if (categoryIconUrl) {
-            categoryBadge.classList.add('badge-icon-only');
-            const categoryIcon = document.createElement('img');
-            categoryIcon.className = 'badge-icon';
-            categoryIcon.src = categoryIconUrl;
-            categoryIcon.alt = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
-            categoryIcon.title = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
-            categoryIcon.loading = 'lazy';
-            categoryBadge.appendChild(categoryIcon);
-        } else {
-            categoryBadge.textContent = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
+            iconPanel.appendChild(createCardMetaIcon(
+                categoryIconUrl,
+                CATEGORY_DISPLAY_NAMES[item.category] || item.category
+            ));
+        }
+
+        const gameIconUrl = GAME_LOGO_URLS[item.game];
+        if (gameIconUrl) {
+            iconPanel.appendChild(createCardMetaIcon(gameIconUrl, item.game));
+        }
+
+        if (item.tags.includes('Chroma') && CHROMA_ICON_URL) {
+            iconPanel.appendChild(createCardMetaIcon(CHROMA_ICON_URL, 'Chroma'));
         }
 
         header.appendChild(textWrapper);
-        header.appendChild(categoryBadge);
+        header.appendChild(iconPanel);
         info.appendChild(header);
 
         if (item.tags.length > 0) {
             const tagContainer = document.createElement('div');
             tagContainer.className = 'tag-container';
-            item.tags.forEach(tag => {
+            item.tags.filter(tag => tag !== 'Chroma').forEach(tag => {
                 const tagSpan = document.createElement('span');
                 tagSpan.className = 'tag';
                 tagSpan.textContent = tag;
@@ -922,6 +952,16 @@ function renderGallery(items) {
             }
         }
     });
+}
+
+function createCardMetaIcon(url, label) {
+    const icon = document.createElement('img');
+    icon.className = 'card-meta-icon';
+    icon.src = url;
+    icon.alt = label;
+    icon.title = label;
+    icon.loading = 'lazy';
+    return icon;
 }
 
 function createPreviewObserver() {
@@ -1047,6 +1087,7 @@ function mapFlatItemToMediaItem(item) {
     const skinReleaseYear = normalizeValue(item.skinReleaseYear) || 'Unknown';
 
     return {
+        id: normalizeValue(item.id) || '',
         title,
         skinName,
         description,

@@ -299,6 +299,21 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 .card-game { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
+.card-meta-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    min-height: 24px;
+}
+
+.card-meta-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    display: block;
+}
+
 .badge {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
@@ -566,6 +581,7 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 @media (max-width: 768px) {
     .lightbox {
         padding: 1rem;
+        justify-content: flex-start;
     }
 
     .close-btn {
@@ -579,15 +595,20 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     .lightbox-content {
         flex-direction: column;
         gap: 0;
+        overflow: visible;
     }
     
     .lightbox-media {
-        min-height: 300px;
+        flex: none;
+        min-height: 0;
         padding: 1.5rem;
     }
     
-    .lightbox-media img {
-        max-height: 50vh;
+    .lightbox-media img,
+    .lightbox-media video,
+    .lightbox-embed {
+        max-width: 100%;
+        max-height: calc(100vh - 2rem);
     }
     
     .lightbox-info {
@@ -625,6 +646,7 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     }
     
     .lightbox-media {
+        min-height: 0;
         padding: 1rem;
     }
 }
@@ -1310,4 +1332,25 @@ body::before { display: none; }
     .masthead + .nav-content .brand-block {
         transform: translateY(2px);
     }
+}
+
+.lightbox-technical-details {
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    padding-top: 0.8rem;
+}
+
+.lightbox-technical-details summary {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.lightbox-technical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 1rem;
 }
