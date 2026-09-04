@@ -454,9 +454,9 @@ function openLightbox(item, options = {}) {
 
     currentLightboxItem = item;
 
-    let existingVideo = mediaContainer.querySelector('video');
-    if (existingVideo) {
-        existingVideo.remove();
+    const existingPlayer = mediaContainer.querySelector('video, audio');
+    if (existingPlayer) {
+        existingPlayer.remove();
         lightboxImg.classList.remove('hidden');
     }
 
@@ -501,7 +501,7 @@ function openLightbox(item, options = {}) {
             </div>
             <div class="detail-item">
                 <span class="detail-label">Resolution:</span>
-                <span class="detail-value" data-resolution>${isExternal && item.platform === 'youtube' ? 'Not available' : 'Loading...'}</span>
+                <span class="detail-value" data-resolution>${item.type === 'audio' || (isExternal && item.platform === 'youtube') ? 'Not available' : 'Loading...'}</span>
             </div>
         `;
     }
@@ -793,6 +793,13 @@ async function fetchFilterOptions() {
                     : [...new Set(catalogItems.flatMap(item => item.tags))].sort((left, right) => left.localeCompare(right))
             };
             console.log('Filter options set:', allAvailableFilterOptions);
+        } else if (item.type === 'audio') {
+            lightboxImg.classList.add('hidden');
+            const audio = document.createElement('audio');
+            audio.src = assetUrl;
+            audio.controls = true;
+            audio.preload = 'metadata';
+            mediaContainer.appendChild(audio);
         } else {
             throw new Error('Invalid catalog response structure');
         }
@@ -1037,6 +1044,11 @@ function hydrateCardPreview(mediaWrapper) {
         video.playsInline = true;
         video.preload = 'none';
         mediaWrapper.appendChild(video);
+    } else if (itemType === 'audio') {
+        const audioPreview = document.createElement('div');
+        audioPreview.className = 'external-link-preview audio-preview';
+        audioPreview.textContent = 'Audio file';
+        mediaWrapper.appendChild(audioPreview);
     } else {
         const img = document.createElement('img');
         img.src = mediaUrl;

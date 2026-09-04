@@ -447,6 +447,10 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     object-fit: contain;
 }
 
+.lightbox-media audio {
+    width: min(100%, 560px);
+}
+
 .lightbox-embed {
     width: min(100%, 960px);
     aspect-ratio: 16 / 9;
