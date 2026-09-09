@@ -829,14 +829,14 @@ function applyFilters(options = {}) {
         .sort((left, right) => {
             switch (currentSort) {
                 case 'oldest':
-                    return Number(left.releaseYear) - Number(right.releaseYear) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+                    return Number(left.releaseYear) - Number(right.releaseYear) || String(left.databaseId).localeCompare(String(right.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
                 case 'skinline-asc':
                     return left.skinline.localeCompare(right.skinline) || left.title.localeCompare(right.title);
                 case 'none':
                     return 0;
                 case 'newest':
                 default:
-                    return Number(right.releaseYear) - Number(left.releaseYear) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+                    return Number(right.releaseYear) - Number(left.releaseYear) || String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
             }
         });
 
