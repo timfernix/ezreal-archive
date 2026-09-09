@@ -34,6 +34,7 @@ const SKINLINE_ICON_URLS = {
     'Faerie Court': 'https://assets.timfernix.dev/icons/Ezreal_33.ico',
     'Frosted': 'https://assets.timfernix.dev/icons/Ezreal_3.ico',
     'HEARTSTEEL': 'https://assets.timfernix.dev/icons/Ezreal_43.ico',
+    'HEARTSTEEL 2026': 'https://assets.timfernix.dev/icons/riot.webp',
     'Heavenscale': 'https://assets.timfernix.dev/icons/Ezreal_44.ico',
     'Hidden Dragon': 'https://assets.timfernix.dev/icons/Hidden_Dragon_Chibi.jpeg',
     'Ink Keeper': 'https://assets.timfernix.dev/icons/Ink_Keeper_Chibi.jpeg',
@@ -81,7 +82,8 @@ const CATEGORY_ICON_URLS = {
     'Model': 'https://assets.timfernix.dev/icons/model.png',
     'Promoart': 'https://assets.timfernix.dev/icons/promoart.png',
     'Splashart': 'https://assets.timfernix.dev/icons/splashart.png',
-    'Video': 'https://assets.timfernix.dev/icons/video.png'
+    'Video': 'https://assets.timfernix.dev/icons/video.png',
+    'UI': 'https://assets.timfernix.dev/icons/ui.png'
 };
 const CATEGORY_DISPLAY_NAMES = {
     'Promoart': 'Promo/Artwork'
