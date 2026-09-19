@@ -86,7 +86,7 @@ const CATEGORY_ICON_URLS = {
     'UI': 'https://assets.timfernix.dev/icons/ui.png'
 };
 const CATEGORY_DISPLAY_NAMES = {
-    'Promoart': 'Promo/Artwork'
+    'Promoart': 'Promo-/Artwork'
 };
 const CHROMA_ICON_URL = 'https://assets.timfernix.dev/icons/chroma.png';
 
@@ -235,7 +235,7 @@ function getExternalPreviewImageUrl(item) {
         return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
     }
 
-    if (item.platform === 'tenor' || /\.gif($|\?)/i.test(url)) {
+    if (item.platform === 'tenor' || item.platform === 'giphy' || item.platform === 'klipy' || /\.(gif|webp)($|\?)/i.test(url)) {
         return url;
     }
 
