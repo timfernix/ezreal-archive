@@ -319,6 +319,14 @@ function syncCheckboxUIWithActiveFilters() {
 
     groups.forEach(group => {
         const menu = document.getElementById(group.menuId);
+        const toggle = document.querySelector(`.filter-toggle[data-target="${group.menuId}"]`);
+
+        if (toggle) {
+            const hasActiveFilters = activeFilters[group.key].length > 0;
+            toggle.classList.toggle('has-active', hasActiveFilters);
+            toggle.setAttribute('aria-pressed', String(hasActiveFilters));
+        }
+
         if (!menu) {
             return;
         }
@@ -748,6 +756,7 @@ function createCheckboxes(menuId, options, filterType) {
             } else {
                 activeFilters[filterType] = activeFilters[filterType].filter(item => item !== opt);
             }
+            syncCheckboxUIWithActiveFilters();
             reloadFromServer(); // Trigger filtering whenever a box is toggled
         });
         menu.appendChild(label);
