@@ -166,14 +166,58 @@ function resolveReleaseYear(skin, asset) {
     return 'Unknown';
 }
 
-function resolveSkinReleaseYear(skin) {
-    const skinReleaseYear = normalizeValue(skin.releaseYear);
+function resolveSkinReleaseDate(item) {
+    const skinReleaseDate = normalizeValue(item.skinReleaseDate) || normalizeValue(item.skinReleaseYear);
+    return skinReleaseDate ? String(skinReleaseDate) : 'Unknown';
+}
 
-    if (skinReleaseYear !== undefined && skinReleaseYear !== null && skinReleaseYear !== '') {
-        return String(skinReleaseYear);
+function parseSkinReleaseDate(value) {
+    const match = /^(\d{4})(?:-(\d{2})-(\d{2}))?$/.exec(String(normalizeValue(value) || ''));
+    if (!match) {
+        return null;
     }
 
-    return 'Unknown';
+    return {
+        year: Number(match[1]),
+        exactDate: match[2] ? String(value) : null
+    };
+}
+
+function compareSkinReleaseDates(leftValue, rightValue, descending = false) {
+    const leftDate = parseSkinReleaseDate(leftValue);
+    const rightDate = parseSkinReleaseDate(rightValue);
+
+    if (!leftDate || !rightDate) {
+        return leftDate ? -1 : rightDate ? 1 : 0;
+    }
+
+    const direction = descending ? -1 : 1;
+    if (leftDate.year !== rightDate.year) {
+        return (leftDate.year - rightDate.year) * direction;
+    }
+
+    const leftSortDate = leftDate.exactDate || `${leftDate.year}-01-01`;
+    const rightSortDate = rightDate.exactDate || `${rightDate.year}-01-01`;
+    return leftSortDate.localeCompare(rightSortDate) * direction;
+}
+
+function formatSkinReleaseDate(value) {
+    const releaseDate = String(normalizeValue(value) || 'Unknown');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(releaseDate)) {
+        return releaseDate;
+    }
+
+    const date = new Date(`${releaseDate}T00:00:00Z`);
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== releaseDate) {
+        return releaseDate;
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC'
+    }).format(date);
 }
 
 function isExternalItem(item) {
@@ -582,8 +626,8 @@ function openLightbox(item, options = {}) {
             <span class="detail-value">${item.skinName}</span>
         </div>
         <div class="detail-item">
-            <span class="detail-label">Skin Release Year:</span>
-            <span class="detail-value">${item.skinReleaseYear}</span>
+            <span class="detail-label">Skin Release Date:</span>
+            <span class="detail-value">${formatSkinReleaseDate(item.skinReleaseDate)}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Game:</span>
@@ -840,14 +884,14 @@ function applyFilters(options = {}) {
         .sort((left, right) => {
             switch (currentSort) {
                 case 'oldest':
-                    return Number(left.releaseYear) - Number(right.releaseYear) || String(left.databaseId).localeCompare(String(right.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+                    return compareSkinReleaseDates(left.skinReleaseDate, right.skinReleaseDate) || Number(left.releaseYear) - Number(right.releaseYear) || String(left.databaseId).localeCompare(String(right.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
                 case 'skinline-asc':
                     return left.skinline.localeCompare(right.skinline) || left.title.localeCompare(right.title);
                 case 'none':
                     return 0;
                 case 'newest':
                 default:
-                    return Number(right.releaseYear) - Number(left.releaseYear) || String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+                    return compareSkinReleaseDates(left.skinReleaseDate, right.skinReleaseDate, true) || Number(right.releaseYear) - Number(left.releaseYear) || String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
             }
         });
 
@@ -1107,7 +1151,7 @@ function mapFlatItemToMediaItem(item) {
     const source = normalizeValue(item.source) || 'asset';
     const platform = normalizeValue(item.platform) || '';
     const releaseYear = normalizeValue(item.releaseYear) || 'Unknown';
-    const skinReleaseYear = normalizeValue(item.skinReleaseYear) || 'Unknown';
+    const skinReleaseDate = resolveSkinReleaseDate(item);
 
     return {
         id: normalizeValue(item.id) || '',
@@ -1123,9 +1167,9 @@ function mapFlatItemToMediaItem(item) {
         platform,
         skinline,
         releaseYear,
-        skinReleaseYear,
+        skinReleaseDate,
         tags: safeTags,
-        searchString: `${title} ${skinName} ${skinline} ${description} ${item.category || ''} ${item.game || ''} ${source} ${platform} ${releaseYear} ${skinReleaseYear} ${safeTags.join(' ')}`.toLowerCase()
+        searchString: `${title} ${skinName} ${skinline} ${description} ${item.category || ''} ${item.game || ''} ${source} ${platform} ${releaseYear} ${skinReleaseDate} ${safeTags.join(' ')}`.toLowerCase()
     };
 }
 
