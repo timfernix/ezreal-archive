@@ -1,2 +1,5 @@
 catalog/
 .wrangler/
+node_modules/
+package-lock.json
+package.json
