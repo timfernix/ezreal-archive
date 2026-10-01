@@ -674,12 +674,30 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 
 .filter-toggle {
+    position: relative;
     background: rgba(56, 189, 248, 0.08);
     border: 1px solid rgba(56, 189, 248, 0.24);
     color: #d5e8f2;
     cursor: pointer;
     transition: all 0.2s ease, border-color 0.2s ease;
     white-space: nowrap;
+}
+
+.filter-toggle.has-active {
+    border-color: var(--accent);
+    background: rgba(56, 189, 248, 0.16);
+    color: #f0f9ff;
+}
+
+.filter-toggle.has-active::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 0.55rem;
+    border-radius: 50%;
+    background: var(--accent);
+    vertical-align: middle;
 }
 
 .filter-toggle:hover {
