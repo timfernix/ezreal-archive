@@ -11,6 +11,12 @@ let allMediaItems = [];
 let activeFilters = { skinlines: [], categories: [], games: [], tags: [] };
 let currentSort = 'newest';
 let currentLightboxItem = null;
+let currentFilteredItems = [];
+let lightboxZoomed = false;
+let lightboxPan = { x: 0, y: 0 };
+let activeLightboxPan = null;
+let suppressLightboxImageClick = false;
+const LIGHTBOX_ZOOM_SCALE = 2;
 let serverOffset = 0;
 let hasMoreServerData = true;
 let isFetchingPage = false;
@@ -479,6 +485,7 @@ function openAssetFromUrlParam(assetIdFromInit) {
 
 function closeLightbox(syncUrl = true) {
     currentLightboxItem = null;
+    resetLightboxImageZoom();
     lightbox.classList.add('hidden');
 
     if (deferInitialGalleryRender) {
@@ -497,6 +504,137 @@ lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) closeLightbox();
 });
 
+function navigateLightbox(direction) {
+    if (!currentLightboxItem || currentFilteredItems.length === 0) {
+        return;
+    }
+
+    const currentIndex = currentFilteredItems.findIndex(item => getAssetShareId(item) === getAssetShareId(currentLightboxItem));
+    const startIndex = currentIndex < 0 ? (direction > 0 ? -1 : 0) : currentIndex;
+    const nextIndex = (startIndex + direction + currentFilteredItems.length) % currentFilteredItems.length;
+    openLightbox(currentFilteredItems[nextIndex]);
+}
+
+document.addEventListener('keydown', (event) => {
+    if (lightbox.classList.contains('hidden')) {
+        return;
+    }
+
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        closeLightbox();
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        navigateLightbox(event.key === 'ArrowRight' ? 1 : -1);
+    }
+});
+
+function resetLightboxImageZoom() {
+    lightboxZoomed = false;
+    lightboxPan = { x: 0, y: 0 };
+    activeLightboxPan = null;
+    suppressLightboxImageClick = false;
+    lightboxImg.style.transform = '';
+    lightboxImg.classList.remove('is-zoomable', 'is-zoomed', 'is-panning');
+}
+
+function updateLightboxImageTransform() {
+    if (!lightboxZoomed) {
+        lightboxImg.style.transform = '';
+        lightboxImg.classList.remove('is-zoomed');
+        return;
+    }
+
+    const mediaContainer = document.querySelector('.lightbox-media');
+    const mediaStyles = window.getComputedStyle(mediaContainer);
+    const availableWidth = mediaContainer.clientWidth - parseFloat(mediaStyles.paddingLeft) - parseFloat(mediaStyles.paddingRight);
+    const availableHeight = mediaContainer.clientHeight - parseFloat(mediaStyles.paddingTop) - parseFloat(mediaStyles.paddingBottom);
+    const maxPanX = Math.max(0, (lightboxImg.offsetWidth * LIGHTBOX_ZOOM_SCALE - availableWidth) / 2);
+    const maxPanY = Math.max(0, (lightboxImg.offsetHeight * LIGHTBOX_ZOOM_SCALE - availableHeight) / 2);
+
+    lightboxPan.x = Math.max(-maxPanX, Math.min(maxPanX, lightboxPan.x));
+    lightboxPan.y = Math.max(-maxPanY, Math.min(maxPanY, lightboxPan.y));
+    lightboxImg.style.transform = `translate3d(${lightboxPan.x}px, ${lightboxPan.y}px, 0) scale(${LIGHTBOX_ZOOM_SCALE})`;
+    lightboxImg.classList.add('is-zoomed');
+}
+
+function toggleLightboxImageZoom() {
+    if (lightboxImg.classList.contains('hidden') || !lightboxImg.classList.contains('is-zoomable')) {
+        return;
+    }
+
+    lightboxZoomed = !lightboxZoomed;
+    if (!lightboxZoomed) {
+        lightboxPan = { x: 0, y: 0 };
+    }
+    updateLightboxImageTransform();
+}
+
+function updateLightboxImageZoomAvailability() {
+    const hasHighResolution = lightboxImg.naturalWidth > lightboxImg.clientWidth * 1.2 ||
+        lightboxImg.naturalHeight > lightboxImg.clientHeight * 1.2;
+    lightboxImg.classList.toggle('is-zoomable', hasHighResolution);
+}
+
+lightboxImg.addEventListener('click', () => {
+    if (suppressLightboxImageClick) {
+        suppressLightboxImageClick = false;
+        return;
+    }
+    toggleLightboxImageZoom();
+});
+
+lightboxImg.addEventListener('pointerdown', (event) => {
+    if (!lightboxZoomed || event.button !== 0) {
+        return;
+    }
+
+    event.preventDefault();
+    activeLightboxPan = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        panX: lightboxPan.x,
+        panY: lightboxPan.y,
+        moved: false
+    };
+    lightboxImg.classList.add('is-panning');
+    lightboxImg.setPointerCapture(event.pointerId);
+});
+
+lightboxImg.addEventListener('pointermove', (event) => {
+    if (!activeLightboxPan || activeLightboxPan.pointerId !== event.pointerId) {
+        return;
+    }
+
+    const deltaX = event.clientX - activeLightboxPan.startX;
+    const deltaY = event.clientY - activeLightboxPan.startY;
+    activeLightboxPan.moved ||= Math.abs(deltaX) + Math.abs(deltaY) > 2;
+    lightboxPan = {
+        x: activeLightboxPan.panX + deltaX,
+        y: activeLightboxPan.panY + deltaY
+    };
+    updateLightboxImageTransform();
+});
+
+function finishLightboxPan(event) {
+    if (!activeLightboxPan || activeLightboxPan.pointerId !== event.pointerId) {
+        return;
+    }
+
+    suppressLightboxImageClick = activeLightboxPan.moved;
+    activeLightboxPan = null;
+    lightboxImg.classList.remove('is-panning');
+    if (suppressLightboxImageClick) {
+        requestAnimationFrame(() => {
+            suppressLightboxImageClick = false;
+        });
+    }
+}
+
+lightboxImg.addEventListener('pointerup', finishLightboxPan);
+lightboxImg.addEventListener('pointercancel', finishLightboxPan);
+
 function openLightbox(item, options = {}) {
     const { syncUrl = true } = options;
     const mediaContainer = document.querySelector('.lightbox-media');
@@ -507,6 +645,7 @@ function openLightbox(item, options = {}) {
     const technicalDiv = document.getElementById('lightbox-technical');
 
     currentLightboxItem = item;
+    resetLightboxImageZoom();
 
     const existingPlayer = mediaContainer.querySelector('video, audio');
     if (existingPlayer) {
@@ -533,6 +672,7 @@ function openLightbox(item, options = {}) {
             return;
         }
         lightboxImg.classList.add('hidden');
+        lightboxImg.classList.remove('is-zoomable');
         const errorHint = document.createElement('div');
         errorHint.className = 'external-link-preview';
         errorHint.textContent = 'Preview could not be loaded';
@@ -664,6 +804,11 @@ function openLightbox(item, options = {}) {
     }
 
     lightbox.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        if (currentLightboxItem === item) {
+            updateLightboxImageZoomAvailability();
+        }
+    });
 
     if (syncUrl) {
         syncUrlWithState();
@@ -678,6 +823,7 @@ function updateLightboxResolution(item, width, height) {
     const resolutionElement = document.querySelector('[data-resolution]');
     if (resolutionElement && width && height) {
         resolutionElement.textContent = `${width} x ${height}px`;
+        updateLightboxImageZoomAvailability();
     }
 }
 
@@ -894,6 +1040,7 @@ function applyFilters(options = {}) {
                     return compareSkinReleaseDates(left.skinReleaseDate, right.skinReleaseDate, true) || Number(right.releaseYear) - Number(left.releaseYear) || String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
             }
         });
+    currentFilteredItems = matchingItems;
 
     totalAvailableItems = matchingItems.length;
     const displayedItems = matchingItems.slice(0, serverOffset);

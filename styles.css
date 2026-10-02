@@ -431,6 +431,7 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
 }
 
 .lightbox-media {
+    position: relative;
     flex: 1;
     display: flex;
     align-items: center;
@@ -438,6 +439,7 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     min-height: 400px;
     background: rgba(0, 0, 0, 0.5);
     padding: 2rem;
+    overflow: hidden;
 }
 
 .lightbox-media img {
@@ -445,6 +447,24 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     max-height: 70vh;
     border-radius: 8px;
     object-fit: contain;
+    transform-origin: center;
+    transition: transform 180ms ease;
+    touch-action: auto;
+}
+
+.lightbox-media img.is-zoomable {
+    cursor: zoom-in;
+}
+
+.lightbox-media img.is-zoomed {
+    cursor: grab;
+    touch-action: none;
+}
+
+.lightbox-media img.is-panning {
+    cursor: grabbing;
+    transition: none;
+    user-select: none;
 }
 
 .lightbox-media audio {
