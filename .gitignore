@@ -3,3 +3,5 @@ catalog/
 node_modules/
 package-lock.json
 package.json
+.assetsignore
+start-local.ps1

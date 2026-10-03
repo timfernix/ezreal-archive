@@ -40,6 +40,9 @@
                 <h1 class="brand-name">Ezreal <span>Media Archive</span></h1>
                 <p class="brand-subline">by <a href="https://timfernix.dev" target="_blank" rel="noopener noreferrer">timfernix</a></p>
             </div>
+            <button id="info-button" class="info-button" type="button" aria-haspopup="dialog" aria-controls="info-modal">
+                Info
+            </button>
         </div>
         <div class="filter-section">
             <div class="search-box">
@@ -116,6 +119,35 @@
     </div>
 
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <dialog id="info-modal" class="info-modal" aria-labelledby="info-modal-title">
+        <div class="info-modal-header">
+            <h2 id="info-modal-title">About this project</h2>
+            <form method="dialog">
+                <button class="info-modal-close" type="submit" aria-label="Close information dialog">&times;</button>
+            </form>
+        </div>
+        <div class="info-modal-body">
+            <section>
+                <h3>Project</h3>
+                <p>Ezreal Media Archive is a searchable gallery that helps fans browse official Ezreal assets.</p>
+                <p>Created by <a href="https://timfernix.dev" target="_blank" rel="noopener noreferrer">timfernix</a>. Contributions are welcome on <a href="https://github.com/timfernix/ezreal-archive" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+            </section>
+            <section>
+                <h3>Disclaimer</h3>
+                <p>I curate this archive by hand and it may contain mistakes. Details can be inaccurate, and some assets may be missing entirely. If you spot an error or a missing item, please let me know.</p>
+                <p>Notice: I will not include any leaked content.</p>
+            </section>
+            <section>
+                <h3>Legal Info</h3>
+                <p>League of Legends and all related assets are trademarks of Riot Games, Inc. This project was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
+            </section>
+            <details id="changelog-details" class="changelog-details">
+                <summary>Changelog</summary>
+                <div id="changelog-content" class="changelog-content" aria-live="polite"></div>
+            </details>
+        </div>
+    </dialog>
 
     <script src="script.js?v=database-id" type="module"></script>
 </body>
