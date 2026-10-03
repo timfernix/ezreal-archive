@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Release timeline of Ezreal skins and their development, from the Ezreal Media Archive.">
+    <link rel="icon" href="https://assets.timfernix.dev/base/Base_Ezreal_Current_Icon.png" type="image/png" />
+    <title>Release Timeline | Ezreal Media Archive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="timeline.css">
+</head>
+<body class="timeline-page">
+    <nav class="glass-nav timeline-nav">
+        <div class="masthead">
+            <div class="masthead-art" aria-hidden="true"></div>
+            <div class="masthead-rule" aria-hidden="true"></div>
+        </div>
+        <div class="nav-content">
+            <div class="brand-block">
+                <h1 class="brand-name"><a href="./">Ezreal <span>Media Archive</span></a></h1>
+                <p class="brand-subline">Release Timeline</p>
+            </div>
+            <div class="nav-actions">
+                <a class="info-button" href="./">Archive</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="timeline-wrapper">
+        <header class="timeline-intro">
+            <div>
+                <h2>Ezreal through the years</h2>
+                <p>Toggle skinlines and follow each skin through its stages. Click a node for details.</p>
+            </div>
+        </header>
+
+        <div id="timeline-state" class="state-message">Loading timeline...</div>
+        <div id="view-root" class="view-root"></div>
+    </main>
+
+    <dialog id="timeline-viewer" class="timeline-viewer">
+        <form method="dialog"><button class="timeline-viewer-close" type="submit" aria-label="Close image">&times;</button></form>
+        <img id="timeline-viewer-img" src="" alt="">
+        <p id="timeline-viewer-caption"></p>
+    </dialog>
+
+    <script src="timeline.js" type="module"></script>
+</body>
+</html>

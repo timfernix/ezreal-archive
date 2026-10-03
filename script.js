@@ -26,6 +26,11 @@ let catalogGeneratedAt = null;
 let deferInitialGalleryRender = false;
 let allAvailableFilterOptions = { skinlines: [], categories: [], games: [], tags: [] };
 let searchDebounceTimer = null;
+let showFavoritesOnly = false;
+const FAVORITES_COOKIE = 'ezreal_favorites';
+const FAVORITES_NOTICE_COOKIE = 'ezreal_favorites_notice';
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+const FAVORITES_COOKIE_MAX_LENGTH = 3800;
 
 // Icons
 const SKINLINE_ICON_URLS = {
@@ -114,6 +119,11 @@ const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const originalLink = document.getElementById('original-link');
 const shareAssetLinkButton = document.getElementById('share-asset-link');
+const shareSearchButton = document.getElementById('share-search-btn');
+const favoritesFilterButton = document.getElementById('favorites-filter-btn');
+const lightboxFavoriteButton = document.getElementById('lightbox-favorite-btn');
+const favoritesNotice = document.getElementById('favorites-notice');
+const favoritesNoticeClose = document.getElementById('favorites-notice-close');
 const toastElement = document.getElementById('toast');
 const infoButton = document.getElementById('info-button');
 const infoModal = document.getElementById('info-modal');
@@ -492,6 +502,7 @@ function clearAllFilters() {
     activeFilters = { skinlines: [], categories: [], games: [], tags: [] };
     searchInput.value = '';
     currentSort = 'newest';
+    setFavoritesFilter(false);
 
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
@@ -538,6 +549,114 @@ function buildAssetOnlyShareUrl(item, useCustomBase = false) {
     }
 
     return url;
+}
+
+function readCookie(name) {
+    const prefix = `${name}=`;
+    const entry = document.cookie.split('; ').find(part => part.startsWith(prefix));
+    return entry ? entry.slice(prefix.length) : '';
+}
+
+function writeCookie(name, value) {
+    document.cookie = `${name}=${value}; max-age=${COOKIE_MAX_AGE_SECONDS}; path=/; SameSite=Lax`;
+}
+
+function getFavoriteKey(item) {
+    return item.databaseId !== '' && item.databaseId != null
+        ? String(item.databaseId)
+        : `a${getAssetShareId(item)}`;
+}
+
+function readFavoriteKeys() {
+    const raw = readCookie(FAVORITES_COOKIE);
+    if (!raw) {
+        return [];
+    }
+
+    try {
+        return decodeURIComponent(raw).split(',').filter(Boolean);
+    } catch {
+        return [];
+    }
+}
+
+function isFavorite(item) {
+    return readFavoriteKeys().includes(getFavoriteKey(item));
+}
+
+function updateFavoriteButtons() {
+    const keys = new Set(readFavoriteKeys());
+
+    document.querySelectorAll('.card-favorite-btn').forEach(button => {
+        const active = keys.has(button.dataset.favoriteKey);
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('aria-label', active ? 'Remove from favorites' : 'Add to favorites');
+    });
+
+    if (lightboxFavoriteButton && currentLightboxItem) {
+        const active = keys.has(getFavoriteKey(currentLightboxItem));
+        lightboxFavoriteButton.classList.toggle('is-active', active);
+        lightboxFavoriteButton.setAttribute('aria-pressed', String(active));
+        lightboxFavoriteButton.textContent = active ? 'Remove from Favorites' : 'Add to Favorites';
+    }
+
+    if (favoritesFilterButton) {
+        favoritesFilterButton.textContent = keys.size > 0 ? `Favorites (${keys.size})` : 'Favorites';
+    }
+}
+
+function toggleFavorite(item) {
+    const key = getFavoriteKey(item);
+    const keys = readFavoriteKeys();
+    const index = keys.indexOf(key);
+
+    if (index >= 0) {
+        keys.splice(index, 1);
+    } else {
+        keys.push(key);
+    }
+
+    const value = encodeURIComponent(keys.join(','));
+    if (value.length > FAVORITES_COOKIE_MAX_LENGTH) {
+        showToast('Favorites limit reached');
+        return;
+    }
+
+    writeCookie(FAVORITES_COOKIE, value);
+
+    if (index < 0 && !readCookie(FAVORITES_NOTICE_COOKIE) && favoritesNotice) {
+        favoritesNotice.classList.remove('hidden');
+    }
+
+    updateFavoriteButtons();
+
+    if (showFavoritesOnly) {
+        applyFilters({ syncUrl: false });
+    }
+}
+
+function setFavoritesFilter(enabled) {
+    showFavoritesOnly = enabled;
+    if (favoritesFilterButton) {
+        favoritesFilterButton.classList.toggle('has-active', enabled);
+        favoritesFilterButton.setAttribute('aria-pressed', String(enabled));
+    }
+}
+
+async function copyToClipboard(text, successMessage) {
+    let copied = false;
+
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            copied = true;
+        }
+    } catch {
+        copied = false;
+    }
+
+    showToast(copied ? successMessage : 'Copy failed');
 }
 
 function showToast(message) {
@@ -905,6 +1024,7 @@ function openLightbox(item, options = {}) {
     }
 
     lightbox.classList.remove('hidden');
+    updateFavoriteButtons();
     requestAnimationFrame(() => {
         if (currentLightboxItem === item) {
             updateLightboxImageZoomAvailability();
@@ -956,9 +1076,37 @@ async function init() {
         });
         document.querySelectorAll('.filter-toggle').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (btn === favoritesFilterButton) {
+                    setFavoritesFilter(!showFavoritesOnly);
+                    reloadFromServer({ syncUrl: false });
+                    return;
+                }
                 document.getElementById(e.target.dataset.target).classList.toggle('show');
             });
         });
+
+        if (shareSearchButton) {
+            shareSearchButton.addEventListener('click', () => {
+                copyToClipboard(buildShareableUrl(null, true).toString(), 'Search link copied');
+            });
+        }
+
+        if (lightboxFavoriteButton) {
+            lightboxFavoriteButton.addEventListener('click', () => {
+                if (currentLightboxItem) {
+                    toggleFavorite(currentLightboxItem);
+                }
+            });
+        }
+
+        if (favoritesNoticeClose) {
+            favoritesNoticeClose.addEventListener('click', () => {
+                writeCookie(FAVORITES_NOTICE_COOKIE, '1');
+                favoritesNotice.classList.add('hidden');
+            });
+        }
+
+        updateFavoriteButtons();
 
         if (mobileFilterToggle) {
             mobileFilterToggle.addEventListener('click', () => {
@@ -1115,6 +1263,7 @@ async function fetchFilterOptions() {
 function applyFilters(options = {}) {
     const { syncUrl = true, deferRender = false } = options;
     const searchTerm = searchInput.value.trim().toLowerCase();
+    const favoriteKeySet = new Set(readFavoriteKeys());
     const matchingItems = allMediaItems
         .filter(item => {
             if (searchTerm && !item.searchString.includes(searchTerm)) {
@@ -1122,6 +1271,7 @@ function applyFilters(options = {}) {
             }
 
             return (
+                (!showFavoritesOnly || favoriteKeySet.has(getFavoriteKey(item))) &&
                 (activeFilters.skinlines.length === 0 || activeFilters.skinlines.includes(item.skinline)) &&
                 (activeFilters.categories.length === 0 || activeFilters.categories.includes(item.category)) &&
                 (activeFilters.games.length === 0 || activeFilters.games.includes(item.game)) &&
@@ -1193,6 +1343,16 @@ function renderGallery(items) {
         setCardPreviewPlaceholder(mediaWrapper);
         queueCardPreviewLoad(mediaWrapper, item);
 
+        const favoriteButton = document.createElement('button');
+        favoriteButton.type = 'button';
+        favoriteButton.className = 'card-favorite-btn';
+        favoriteButton.dataset.favoriteKey = getFavoriteKey(item);
+        favoriteButton.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21C12 21 3 15.500 3 9.500A4.500 4.500 0 0 1 12 7.500A4.500 4.500 0 0 1 21 9.500C21 15.500 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+        favoriteButton.addEventListener('click', event => {
+            event.stopPropagation();
+            toggleFavorite(item);
+        });
+
         const info = document.createElement('div');
         info.className = 'card-info';
 
@@ -1242,11 +1402,13 @@ function renderGallery(items) {
         }
 
         card.appendChild(mediaWrapper);
+        card.appendChild(favoriteButton);
         card.appendChild(info);
         fragment.appendChild(card);
     });
 
     container.appendChild(fragment);
+    updateFavoriteButtons();
 
     // Eager-load first N cards for faster initial scroll experience
     let eagerCount = 0;
@@ -1495,17 +1657,6 @@ if (shareAssetLinkButton) {
         }
 
         const shareUrl = buildAssetOnlyShareUrl(currentLightboxItem, true).toString();
-        let copied = false;
-
-        try {
-            if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(shareUrl);
-                copied = true;
-            }
-        } catch {
-            copied = false;
-        }
-
-        showToast(copied ? 'Link copied' : 'Copy failed');
+        await copyToClipboard(shareUrl, 'Link copied');
     });
 }

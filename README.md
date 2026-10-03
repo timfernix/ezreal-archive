@@ -11,6 +11,12 @@ Here is the repository for the backend worker: [Ezreal Archive Backend](https://
 
 Ezreal Media Archive is a searchable gallery that helps fans browse official Ezreal assets.
 
+## Features
+
+- Search, filter and sort the archive
+- Favorites stored in a browser cookie
+- Release timeline
+
 ## Contributing
 
 Contributions are always welcome.

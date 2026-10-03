@@ -1,0 +1,458 @@
+{
+  "skins": [
+    {
+      "id": "base",
+      "name": "Base Ezreal",
+      "skinline": "Base",
+      "releaseDate": "2010-03-16",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2010-03-16",
+          "image": "https://assets.timfernix.dev/base/Base_Ezreal_Old_1st_Version_Splashart.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2012-08-01",
+          "image": "https://assets.timfernix.dev/base/Base_Ezreal_Old_2nd_Version_Splashart.jpg",
+          "caption": ""
+        },
+        {
+          "label": "3rd Version",
+          "date": "2014-11-05",
+          "image": "https://assets.timfernix.dev/base/Base_Ezreal_Old_3rd_Version_Splashart.jpg",
+          "caption": ""
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/base/Base_Ezreal_Current_Splashart.jpg",
+          "caption": "Visual Update"
+        },
+        {
+          "label": "Current",
+          "date": "2020-06-06",
+          "image": "https://assets.timfernix.dev/base/Ezreal_OriginalSkin_WR.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "nottingham",
+      "name": "Nottingham Ezreal",
+      "skinline": "Nottingham",
+      "releaseDate": "2010-03-16",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2010-03-16",
+          "image": "https://assets.timfernix.dev/nottingham/Nottingham_old_1st_Version_Splashart.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2012-08-01",
+          "image": "https://assets.timfernix.dev/nottingham/Ezreal_NottinghamSkin_old2_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/nottingham/Ezreal_NottinghamSkin_HD.jpg",
+          "caption": "Visual Update"
+        }
+      ]
+    },
+    {
+      "id": "striker",
+      "name": "Striker Ezreal",
+      "skinline": "Striker",
+      "releaseDate": "2010-06-24",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2010-06-24",
+          "image": "https://assets.timfernix.dev/striker/Striker_old_1st_Version_Splashart.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2012-08-01",
+          "image": "https://assets.timfernix.dev/striker/Ezreal_StrikerSkin_old2_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/striker/Ezreal_StrikerSkin_HD.jpg",
+          "caption": "Visual Update"
+        },
+        {
+          "label": "Current",
+          "date": "2026-07-09",
+          "image": "https://assets.timfernix.dev/striker/Ezreal_StrikerSkin_WR.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "frosted",
+      "name": "Frosted Ezreal",
+      "skinline": "Frosted",
+      "releaseDate": "2010-07-18",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2010-07-18",
+          "image": "https://assets.timfernix.dev/frosted/Frosted_old_1st_Version_Splashart.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2012-08-01",
+          "image": "https://assets.timfernix.dev/frosted/Ezreal_FrostedSkin_old2_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "3rd Version",
+          "date": "2015-11-14",
+          "image": "https://assets.timfernix.dev/frosted/Ezreal_FrostedSkin_old3_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "4th Version",
+          "date": "2016-07-26",
+          "image": "https://assets.timfernix.dev/frosted/Ezreal_FrostedSkin_old4_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/frosted/Ezreal_FrostedSkin_HD.jpg",
+          "caption": "Visual Update"
+        },
+        {
+          "label": "Current",
+          "date": "2020-10-07",
+          "image": "https://assets.timfernix.dev/frosted/Ezreal_FrostedSkin_WR.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "explorer",
+      "name": "Explorer Ezreal",
+      "skinline": "Explorer",
+      "releaseDate": "2010-10-13",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2010-10-13",
+          "image": "https://assets.timfernix.dev/explorer/Explorer_old_1st__Version_Splashart.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2012-08-01",
+          "image": "https://assets.timfernix.dev/explorer/Explorer_old_2nd_Version_Splashart.jpg",
+          "caption": ""
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/explorer/Ezreal_ExplorerSkin_HD.jpg",
+          "caption": "Visual Update"
+        }
+      ]
+    },
+    {
+      "id": "pulsefire",
+      "name": "Pulsefire Ezreal",
+      "skinline": "Pulsefire",
+      "releaseDate": "2012-06-29",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2012-06-29",
+          "image": "https://assets.timfernix.dev/pulsefire/Ezreal_PulsefireSkin_Upgraded_old_HD.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/pulsefire/Ezreal_PulsefireSkin_HD.jpg",
+          "caption": "Visual Update"
+        }
+      ]
+    },
+    {
+      "id": "tpa",
+      "name": "TPA Ezreal",
+      "skinline": "TPA",
+      "releaseDate": "2013-05-23",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2013-05-23",
+          "image": "https://assets.timfernix.dev/tpa/Ezreal_TPASkin_old_HD.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2018-08-29",
+          "image": "https://assets.timfernix.dev/tpa/Ezreal_TPASkin_old2_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "3rd Version",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/tpa/Ezreal_TPASkin_old3_HD.jpg",
+          "caption": "Visual Update"
+        },
+        {
+          "label": "Current",
+          "date": "2021-06-09",
+          "image": "https://assets.timfernix.dev/tpa/Ezreal_TPASkin_HD.jpg",
+          "caption": "Mundo VGU"
+        }
+      ]
+    },
+    {
+      "id": "debonair",
+      "name": "Debonair Ezreal",
+      "skinline": "Debonair",
+      "releaseDate": "2014-08-05",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2014-08-05",
+          "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_old_HD.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_HD.jpg",
+          "caption": "Visual Update"
+        },
+        {
+          "label": "1st Version",
+          "date": "2020-09-17",
+          "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_WR_old.jpg",
+          "caption": "Wild Rift Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2020-09-17",
+          "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_WR_old2.jpg",
+          "caption": "Wild Rift Release"
+        },
+        {
+          "label": "Current",
+          "date": "2020-09-17",
+          "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_WR.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "ace-of-spades",
+      "name": "Ace of Spades Ezreal",
+      "skinline": "Ace of Spades",
+      "releaseDate": "2015-05-20",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2015-05-20",
+          "image": "https://assets.timfernix.dev/ace-of-spades/Ezreal_AceofSpadesSkin_old_HD.jpg",
+          "caption": "Release"
+        },
+        {
+          "label": "2nd Version",
+          "date": "2015-06-10",
+          "image": "https://assets.timfernix.dev/ace-of-spades/Ezreal_AceofSpadesSkin_old2_HD.jpg",
+          "caption": ""
+        },
+        {
+          "label": "3rd Version",
+          "date": "2018-10-10",
+          "image": "https://assets.timfernix.dev/ace-of-spades/Ezreal_AceofSpadesSkin_old3_HD.jpg",
+          "caption": "Visual Update"
+        },
+        {
+          "label": "Current",
+          "date": "2019-06-12",
+          "image": "https://assets.timfernix.dev/ace-of-spades/Ezreal_AceofSpadesSkin_HD.jpg",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "arcade",
+      "name": "Arcade Ezreal",
+      "skinline": "Arcade",
+      "releaseDate": "2016-08-24",
+      "stages": [
+        {
+          "label": "1st Version",
+          "date": "2016-08-24",
+          "image": "",
+          "caption": "Release"
+        },
+        {
+          "label": "Current",
+          "date": "2018-10-10",
+          "image": "",
+          "caption": "Visual Update"
+        }
+      ]
+    },
+    {
+      "id": "star-guardian",
+      "name": "Star Guardian Ezreal",
+      "skinline": "Star Guardian",
+      "releaseDate": "2017-09-06",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2017-09-06",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "ssg",
+      "name": "SSG Ezreal",
+      "skinline": "SSG",
+      "releaseDate": "2018-07-20",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2018-07-20",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "pajama-guardian",
+      "name": "Pajama Guardian Ezreal",
+      "skinline": "Pajama Guardian",
+      "releaseDate": "2018-11-21",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2018-11-21",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "battle-academia",
+      "name": "Battle Academia Ezreal",
+      "skinline": "Battle Academia",
+      "releaseDate": "2019-05-15",
+      "stages": [
+        {
+          "label": "Skin",
+          "date": "2019-05-15",
+          "image": "",
+          "caption": "Release"
+        },
+        {
+          "label": "Mythic Chroma",
+          "date": "2022-08-24",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "psyops",
+      "name": "PsyOps Ezreal",
+      "skinline": "PsyOps",
+      "releaseDate": "2020-09-03",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2020-09-03",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "porcelain-protector",
+      "name": "Porcelain Protector Ezreal",
+      "skinline": "Porcelain Protector",
+      "releaseDate": "2022-01-26",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2022-01-26",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "faerie-court",
+      "name": "Faerie Court Ezreal",
+      "skinline": "Faerie Court",
+      "releaseDate": "2023-05-23",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2023-05-23",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "heartsteel",
+      "name": "HEARTSTEEL Ezreal",
+      "skinline": "HEARTSTEEL",
+      "releaseDate": "2023-11-08",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2023-11-08",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "heavenscale",
+      "name": "Heavenscale Ezreal",
+      "skinline": "Heavenscale",
+      "releaseDate": "2024-02-07",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2024-02-07",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "black-rose",
+      "name": "Black Rose Ezreal",
+      "skinline": "Black Rose",
+      "releaseDate": "2025-01-09",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2025-01-09",
+          "image": "",
+          "caption": "Release"
+        }
+      ]
+    }
+  ]
+}

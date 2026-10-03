@@ -40,9 +40,12 @@
                 <h1 class="brand-name">Ezreal <span>Media Archive</span></h1>
                 <p class="brand-subline">by <a href="https://timfernix.dev" target="_blank" rel="noopener noreferrer">timfernix</a></p>
             </div>
-            <button id="info-button" class="info-button" type="button" aria-haspopup="dialog" aria-controls="info-modal">
-                Info
-            </button>
+            <div class="nav-actions">
+                <a id="timeline-link" class="info-button" href="timeline.html">Timeline</a>
+                <button id="info-button" class="info-button" type="button" aria-haspopup="dialog" aria-controls="info-modal">
+                    Info
+                </button>
+            </div>
         </div>
         <div class="filter-section">
             <div class="search-box">
@@ -69,13 +72,27 @@
                     <div id="tag-menu" class="dropdown-menu"></div>
                 </div>
                 <div class="filter-group">
+                    <button id="favorites-filter-btn" class="filter-toggle favorites-toggle" type="button" aria-pressed="false">Favorites</button>
+                </div>
+                <div class="filter-group">
                     <select id="sortSelect" class="sort-select">
                         <option value="newest" selected>Newest First</option>
                         <option value="oldest">Oldest First</option>
                         <option value="skinline-asc">Skinline (A-Z)</option>
                     </select>
                 </div>
-                <button id="clear-filters-btn" type="button" class="clear-filters-btn">Reset</button>
+                <div class="filter-actions">
+                    <button id="clear-filters-btn" type="button" class="clear-filters-btn">Reset</button>
+                    <button id="share-search-btn" type="button" class="share-search-btn" title="Copy link to this search" aria-label="Copy link to this search">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line>
+                            <line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <p id="archive-meta" class="archive-meta" aria-live="polite">
                 <span id="archive-meta-text">Last synced: - | Total items: -</span>
@@ -113,12 +130,18 @@
                 <div class="lightbox-actions">
                     <a id="original-link" href="" target="_blank" class="view-original-btn">Open Original File</a>
                     <button id="share-asset-link" type="button" class="share-asset-btn">Share Asset</button>
+                    <button id="lightbox-favorite-btn" type="button" class="share-asset-btn favorite-action-btn" aria-pressed="false">Add to Favorites</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <div id="favorites-notice" class="favorites-notice hidden" role="status">
+        <p>Favorites are saved in a cookie in this browser. If you delete your cookies, your favorites are gone too.</p>
+        <button id="favorites-notice-close" type="button">Got it</button>
+    </div>
 
     <dialog id="info-modal" class="info-modal" aria-labelledby="info-modal-title">
         <div class="info-modal-header">
@@ -132,6 +155,10 @@
                 <h3>Project</h3>
                 <p>Ezreal Media Archive is a searchable gallery that helps fans browse official Ezreal assets.</p>
                 <p>Created by <a href="https://timfernix.dev" target="_blank" rel="noopener noreferrer">timfernix</a>. Contributions are welcome on <a href="https://github.com/timfernix/ezreal-archive" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+            </section>
+            <section>
+                <h3>Favorites &amp; cookies</h3>
+                <p>Your favorites are stored in a cookie in your browser (no account, nothing is sent to a server). If you delete your cookies, your favorites are gone as well.</p>
             </section>
             <section>
                 <h3>Disclaimer</h3>
