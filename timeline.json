@@ -246,13 +246,13 @@
           "label": "2nd Version",
           "date": "2020-09-17",
           "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_WR_old2.jpg",
-          "caption": "Wild Rift Release"
+          "caption": ""
         },
         {
           "label": "Current",
           "date": "2020-09-17",
           "image": "https://assets.timfernix.dev/debonair/Ezreal_DebonairSkin_WR.jpg",
-          "caption": "Wild Rift Release"
+          "caption": ""
         }
       ]
     },
@@ -297,14 +297,20 @@
         {
           "label": "1st Version",
           "date": "2016-08-24",
-          "image": "",
+          "image": "https://assets.timfernix.dev/arcade/Ezreal_ArcadeSkin_old_HD.jpg",
           "caption": "Release"
         },
         {
           "label": "Current",
           "date": "2018-10-10",
-          "image": "",
+          "image": "https://assets.timfernix.dev/arcade/Ezreal_ArcadeSkin_HD.jpg",
           "caption": "Visual Update"
+        },
+        {
+          "label": "Current",
+          "date": "2023-05-11",
+          "image": "https://assets.timfernix.dev/arcade/Ezreal_ArcadeSkin_WR.jpg",
+          "caption": "Wild Rift Release"
         }
       ]
     },
@@ -317,8 +323,14 @@
         {
           "label": "Current",
           "date": "2017-09-06",
-          "image": "",
+          "image": "https://assets.timfernix.dev/star-guardian/Ezreal_StarGuardianSkin_HD.jpg",
           "caption": "Release"
+        },
+        {
+          "label": "Current",
+          "date": "2021-01-20",
+          "image": "https://assets.timfernix.dev/star-guardian/Ezreal_StarGuardianSkin_WR.jpg",
+          "caption": "Wild Rift Release"
         }
       ]
     },
@@ -331,7 +343,7 @@
         {
           "label": "Current",
           "date": "2018-07-20",
-          "image": "",
+          "image": "https://assets.timfernix.dev/ssg/Ezreal_SSGSkin_HD.jpg",
           "caption": "Release"
         }
       ]
@@ -345,8 +357,14 @@
         {
           "label": "Current",
           "date": "2018-11-21",
-          "image": "",
+          "image": "https://assets.timfernix.dev/pajama-guardian/Ezreal_PajamaGuardianSkin_HD.jpg",
           "caption": "Release"
+        },
+        {
+          "label": "Current",
+          "date": "2022-04-14",
+          "image": "https://assets.timfernix.dev/pajama-guardian/Ezreal_PajamaGuardianSkin_WR.jpg",
+          "caption": "Wild Rift Release"
         }
       ]
     },
@@ -359,14 +377,26 @@
         {
           "label": "Skin",
           "date": "2019-05-15",
-          "image": "",
+          "image": "https://assets.timfernix.dev/battle-academia/Ezreal_BattleAcademiaSkin_HD.jpg",
           "caption": "Release"
         },
         {
           "label": "Mythic Chroma",
           "date": "2022-08-24",
-          "image": "",
-          "caption": "Release"
+          "image": "https://assets.timfernix.dev/battle-academia/Battle_Academia_Mythic_Chroma_Splash__WR.jpg",
+          "caption": "Mythic Chroma Release"
+        },
+        {
+          "label": "Skin",
+          "date": "2020-07-22",
+          "image": "https://assets.timfernix.dev/battle-academia/Ezreal_BattleAcademiaSkin_WR.jpg",
+          "caption": "Wild Rift Release"
+        },
+        {
+          "label": "Mythic Chroma",
+          "date": "2023-06-09",
+          "image": "https://assets.timfernix.dev/battle-academia/Battle_Academia_Mythic_Chroma_Splash__WR.jpg",
+          "caption": "M. Chroma WR Release"
         }
       ]
     },
@@ -379,7 +409,7 @@
         {
           "label": "Current",
           "date": "2020-09-03",
-          "image": "",
+          "image": "https://assets.timfernix.dev/psyops/Ezreal_PsyOpsSkin_HD.jpg",
           "caption": "Release"
         }
       ]
@@ -393,7 +423,7 @@
         {
           "label": "Current",
           "date": "2022-01-26",
-          "image": "",
+          "image": "https://assets.timfernix.dev/porcelain-protector/Ezreal_PorcelainProtectorSkin_HD.jpg",
           "caption": "Release"
         }
       ]
@@ -407,7 +437,7 @@
         {
           "label": "Current",
           "date": "2023-05-23",
-          "image": "",
+          "image": "https://assets.timfernix.dev/faerie-court/Ezreal_FaerieCourtSkin_HD.jpg",
           "caption": "Release"
         }
       ]
@@ -421,8 +451,14 @@
         {
           "label": "Current",
           "date": "2023-11-08",
-          "image": "",
+          "image": "https://assets.timfernix.dev/heartsteel/Ezreal_HEARTSTEELSkin_HD.jpg",
           "caption": "Release"
+        },
+        {
+          "label": "Current",
+          "date": "2023-11-17",
+          "image": "https://assets.timfernix.dev/heartsteel/Ezreal_HEARTSTEELSkin_WR.jpg",
+          "caption": "Wild Rift Release"
         }
       ]
     },
@@ -435,7 +471,7 @@
         {
           "label": "Current",
           "date": "2024-02-07",
-          "image": "",
+          "image": "https://assets.timfernix.dev/heavenscale/Ezreal_HeavenscaleSkin_HD.jpg",
           "caption": "Release"
         }
       ]
@@ -449,8 +485,78 @@
         {
           "label": "Current",
           "date": "2025-01-09",
-          "image": "",
+          "image": "https://assets.timfernix.dev/black-rose/Ezreal_MasqueoftheBlackRoseSkin_HD.jpg",
           "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "heartsteel-2026",
+      "name": "HEARTSTEEL Live My Life Ezreal",
+      "skinline": "HEARTSTEEL Live My Life",
+      "releaseDate": "2026-10-07",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2026-10-07",
+          "image": "https://assets.timfernix.dev/heartsteel-2026/HEARTSTEEL_Live_My_Life_Splashart.jpg",
+          "caption": "Release"
+        }
+      ]
+    },
+    {
+      "id": "crystal-rose",
+      "name": "Crystal Rose Ezreal",
+      "skinline": "Crystal Rose",
+      "releaseDate": "2021-12-14",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2021-12-14",
+          "image": "https://assets.timfernix.dev/crystal-rose/Ezreal_CrystalRoseSkin_WR_HD.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "lovestruck",
+      "name": "Lovestruck Ezreal",
+      "skinline": "Lovestruck",
+      "releaseDate": "2024-02-14",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2024-02-14",
+          "image": "https://assets.timfernix.dev/lovestruck/Ezreal_LovestruckSkin_WR_HD.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "weather-entity",
+      "name": "Weather Entity Ezreal",
+      "skinline": "Weather Entity",
+      "releaseDate": "2025-04-30",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2025-04-30",
+          "image": "https://assets.timfernix.dev/weather-entity/Ezreal_WeatherEntitySkin_WR_HD.jpg",
+          "caption": "Wild Rift Release"
+        }
+      ]
+    },
+    {
+      "id": "love-confession",
+      "name": "Love Confession Ezreal",
+      "skinline": "Love Confession",
+      "releaseDate": "2026-02-13",
+      "stages": [
+        {
+          "label": "Current",
+          "date": "2026-02-13",
+          "image": "https://assets.timfernix.dev/love-confession/Ezreal_LoveConfessionSkin_WR_HD.jpg",
+          "caption": "Wild Rift Release"
         }
       ]
     }

@@ -37,13 +37,12 @@ export function createOverviewView(root, model, options = {}) {
     matchButton.classList.add('hidden');
     const chipBar = el('div', 'ov-chips');
     const tools = el('div', 'ov-tools');
-    const allButton = toolButton('All lines');
     const noneButton = toolButton('None');
     const zoomOut = toolButton('\u2212');
     const zoomIn = toolButton('+');
     zoomOut.setAttribute('aria-label', 'Zoom out');
     zoomIn.setAttribute('aria-label', 'Zoom in');
-    tools.append(allButton, noneButton, zoomOut, zoomIn);
+    tools.append(noneButton, zoomOut, zoomIn);
     const filterRow = el('div', 'ov-filter-row');
     filterRow.append(search, matchButton, status);
     const topRow = el('div', 'ov-top-row');
@@ -96,7 +95,7 @@ export function createOverviewView(root, model, options = {}) {
         active.add(id);
         renderChips();
         notifyLines();
-        render();
+        render(true);
     }
     function notifyLines() {
         onLinesChange(active.size === knownLines.size ? null : [...active]);
@@ -110,7 +109,7 @@ export function createOverviewView(root, model, options = {}) {
                 laneElement.classList.add('is-leaving');
                 renderChips();
                 notifyLines();
-                setTimeout(render, 220);
+                setTimeout(() => render(true), 220);
                 return;
             }
         } else {
@@ -120,7 +119,7 @@ export function createOverviewView(root, model, options = {}) {
 
         renderChips();
         notifyLines();
-        render();
+        render(true);
     }
 
     function setAllLines(enabled) {
@@ -130,7 +129,7 @@ export function createOverviewView(root, model, options = {}) {
         }
         renderChips();
         notifyLines();
-        render();
+        render(true);
     }
 
     function mainScroll() {
@@ -161,8 +160,9 @@ export function createOverviewView(root, model, options = {}) {
         return path;
     }
 
-    function render() {
+    function render(scrollToFirst = false) {
         vertical = mobileQuery.matches;
+        let firstMain = Infinity;
         const scrollLeft = scroller.scrollLeft;
         const scrollTop = scroller.scrollTop;
 
@@ -197,6 +197,7 @@ export function createOverviewView(root, model, options = {}) {
                     positions.push(main);
                 });
 
+                firstMain = Math.min(firstMain, positions[0]);
                 const startExtent = positions[0] - NODE_SIZE / 2 - 4;
                 const endExtent = Math.max(positions[positions.length - 1] + NODE_SIZE / 2 + 4, positions[0] - NODE_SIZE / 2 + labelMain);
 
@@ -340,6 +341,11 @@ export function createOverviewView(root, model, options = {}) {
         pendingLaneId = null;
         scroller.scrollLeft = scrollLeft;
         scroller.scrollTop = scrollTop;
+        if (scrollToFirst && Number.isFinite(firstMain)) {
+            const target = Math.max(0, firstMain - NODE_SIZE / 2 - 60);
+            if (vertical) scroller.scrollTop = target;
+            else scroller.scrollLeft = target;
+        }
         applySelectionClasses();
 
         requestAnimationFrame(() => requestAnimationFrame(() => canvas.classList.add('is-drawn')));
@@ -527,9 +533,8 @@ export function createOverviewView(root, model, options = {}) {
         matchingLines().forEach(line => active.add(line.id));
         renderChips();
         notifyLines();
-        render();
+        render(true);
     });
-    allButton.addEventListener('click', () => setAllLines(true));
     noneButton.addEventListener('click', () => setAllLines(false));
     zoomIn.addEventListener('click', () => setZoom(ppy * 1.35));
     zoomOut.addEventListener('click', () => setZoom(ppy / 1.35));
@@ -537,7 +542,7 @@ export function createOverviewView(root, model, options = {}) {
     mobileQuery.addEventListener('change', onOrientationChange);
 
     renderChips();
-    render();
+    render(!focusId);
 
     if (focusId) {
         const skin = model.skins.find(candidate => candidate.id === focusId);
