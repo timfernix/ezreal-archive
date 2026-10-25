@@ -8,6 +8,7 @@ Notable updates to the Ezreal Media Archive.
 - Added full skin release dates for more accurate chronological sorting.
 - Added active-filter indicators to filter menus.
 - Added info modal
+- Added Timeline page
 
 ## 2026-09
 
