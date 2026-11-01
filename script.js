@@ -1075,6 +1075,7 @@ async function init() {
         createCheckboxes('cat-menu', allAvailableFilterOptions.categories, 'categories');
         createCheckboxes('game-menu', allAvailableFilterOptions.games, 'games');
         createCheckboxes('tag-menu', allAvailableFilterOptions.tags, 'tags');
+        warnAboutMissingIcons();
         syncCheckboxUIWithActiveFilters();
 
         serverOffset = PAGE_SIZE;
@@ -1270,6 +1271,25 @@ async function fetchFilterOptions() {
         console.error('Failed to fetch catalog:', err);
         throw err;
     }
+}
+
+// Local-only hint: filter values without an icon-map entry silently render without an icon (keys must match exactly).
+function warnAboutMissingIcons() {
+    if (!['127.0.0.1', 'localhost'].includes(window.location.hostname)) {
+        return;
+    }
+
+    const checks = [
+        ['skinlines', allAvailableFilterOptions.skinlines, SKINLINE_ICON_URLS],
+        ['games', allAvailableFilterOptions.games, GAME_LOGO_URLS],
+        ['categories', allAvailableFilterOptions.categories, CATEGORY_ICON_URLS]
+    ];
+    checks.forEach(([label, options, iconMap]) => {
+        const missing = (options || []).filter(option => !iconMap[option] && option !== 'Generic');
+        if (missing.length > 0) {
+            console.warn(`Missing ${label} icons (${missing.length}):`, missing);
+        }
+    });
 }
 
 function escapeHtml(value) {
