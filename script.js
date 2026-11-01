@@ -1471,12 +1471,11 @@ function createPreviewObserver() {
 
     return new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            if (!entry.isIntersecting) {
-                return;
+            if (entry.isIntersecting) {
+                hydrateCardPreview(entry.target);
+            } else {
+                cancelPendingCardPreview(entry.target);
             }
-
-            hydrateCardPreview(entry.target);
-            previewObserver.unobserve(entry.target);
         });
     }, {
         rootMargin: PREVIEW_MARGIN
@@ -1498,6 +1497,27 @@ function queueCardPreviewLoad(mediaWrapper, item) {
     mediaWrapper.dataset.externalPreviewUrl = getExternalPreviewImageUrl(item) || '';
     mediaWrapper.dataset.itemTitle = item.title;
     mediaWrapper.dataset.platform = item.platform || '';
+}
+
+// Aborts previews that are still downloading once they scroll out of range; they reload when scrolled back.
+function cancelPendingCardPreview(mediaWrapper) {
+    if (mediaWrapper.dataset.loaded !== 'true') {
+        return;
+    }
+
+    const media = mediaWrapper.querySelector('img, video');
+    const isPending = media instanceof HTMLImageElement ? !media.complete : media instanceof HTMLVideoElement ? media.readyState < 3 : false;
+    if (!isPending) {
+        return;
+    }
+
+    media.removeAttribute('src');
+    if (media instanceof HTMLVideoElement) {
+        media.load();
+    }
+    mediaWrapper.innerHTML = '';
+    setCardPreviewPlaceholder(mediaWrapper);
+    mediaWrapper.dataset.loaded = 'false';
 }
 
 function hydrateCardPreview(mediaWrapper) {
