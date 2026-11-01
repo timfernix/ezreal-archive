@@ -456,7 +456,7 @@ function applyUrlStateToInputs() {
 
     searchInput.value = searchFromUrl;
 
-    if (sortFromUrl && ['newest', 'oldest', 'skinline-asc', 'none'].includes(sortFromUrl)) {
+    if (sortFromUrl && ['newest', 'newest-skin', 'oldest', 'skinline-asc', 'none'].includes(sortFromUrl)) {
         currentSort = sortFromUrl;
         const sortSelect = document.getElementById('sortSelect');
         if (sortSelect) {
@@ -1286,9 +1286,11 @@ function applyFilters(options = {}) {
                     return left.skinline.localeCompare(right.skinline) || left.title.localeCompare(right.title);
                 case 'none':
                     return 0;
+                case 'newest-skin':
+                    return compareSkinReleaseDates(left.skinReleaseDate, right.skinReleaseDate, true) || Number(right.releaseYear) - Number(left.releaseYear) || String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
                 case 'newest':
                 default:
-                    return compareSkinReleaseDates(left.skinReleaseDate, right.skinReleaseDate, true) || Number(right.releaseYear) - Number(left.releaseYear) || String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
+                    return String(right.databaseId).localeCompare(String(left.databaseId), undefined, {numeric: true}) || left.skinName.localeCompare(right.skinName) || left.title.localeCompare(right.title);
             }
         });
     currentFilteredItems = matchingItems;
