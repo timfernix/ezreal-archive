@@ -761,6 +761,38 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+const SWIPE_MIN_DISTANCE = 50;
+let swipeStart = null;
+const lightboxMediaArea = document.querySelector('.lightbox-media');
+
+lightboxMediaArea.addEventListener('touchstart', (event) => {
+    const target = event.target;
+    const isMediaControl = target instanceof Element && target.closest('video, audio, iframe');
+    if (event.touches.length !== 1 || lightboxZoomed || isMediaControl) {
+        swipeStart = null;
+        return;
+    }
+    swipeStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+}, { passive: true });
+
+lightboxMediaArea.addEventListener('touchend', (event) => {
+    if (!swipeStart || event.changedTouches.length === 0) {
+        return;
+    }
+
+    const deltaX = event.changedTouches[0].clientX - swipeStart.x;
+    const deltaY = event.changedTouches[0].clientY - swipeStart.y;
+    swipeStart = null;
+
+    if (Math.abs(deltaX) >= SWIPE_MIN_DISTANCE && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        suppressLightboxImageClick = true;
+        setTimeout(() => { suppressLightboxImageClick = false; }, 400);
+        navigateLightbox(deltaX < 0 ? 1 : -1);
+    }
+});
+
+lightboxMediaArea.addEventListener('touchcancel', () => { swipeStart = null; });
+
 function resetLightboxImageZoom() {
     lightboxZoomed = false;
     lightboxPan = { x: 0, y: 0 };
@@ -1046,6 +1078,49 @@ function openLightbox(item, options = {}) {
     if (syncUrl) {
         syncUrlWithState();
     }
+
+    scheduleLightboxNeighborPreload(item);
+}
+
+let lightboxPreloadTimer = null;
+const lightboxPreloadCache = new Map();
+const LIGHTBOX_PRELOAD_CACHE_LIMIT = 6;
+
+function scheduleLightboxNeighborPreload(item) {
+    clearTimeout(lightboxPreloadTimer);
+    // Wait briefly so the current image gets the bandwidth first and rapid navigation doesn't queue downloads.
+    lightboxPreloadTimer = setTimeout(() => {
+        if (currentLightboxItem !== item || currentFilteredItems.length < 2) {
+            return;
+        }
+
+        const currentIndex = currentFilteredItems.findIndex(entry => getAssetShareId(entry) === getAssetShareId(item));
+        if (currentIndex < 0) {
+            return;
+        }
+
+        [1, -1].forEach(direction => {
+            const neighbor = currentFilteredItems[(currentIndex + direction + currentFilteredItems.length) % currentFilteredItems.length];
+            if (!neighbor || neighbor.type !== 'image' || isExternalItem(neighbor)) {
+                return;
+            }
+
+            const url = resolveMediaUrl(neighbor);
+            if (!url || lightboxPreloadCache.has(url)) {
+                return;
+            }
+
+            const preloader = new Image();
+            preloader.decoding = 'async';
+            preloader.fetchPriority = 'low';
+            preloader.src = url;
+            lightboxPreloadCache.set(url, preloader);
+
+            if (lightboxPreloadCache.size > LIGHTBOX_PRELOAD_CACHE_LIMIT) {
+                lightboxPreloadCache.delete(lightboxPreloadCache.keys().next().value);
+            }
+        });
+    }, 250);
 }
 
 function updateLightboxResolution(item, width, height) {
