@@ -1681,3 +1681,12 @@ a.info-button {
 }
 
 .card { position: relative; }
+
+#skinline-menu {
+    width: max-content;
+    min-width: 260px;
+    max-width: min(420px, calc(100vw - 2rem));
+}
+#skinline-menu label {
+    white-space: nowrap;
+}

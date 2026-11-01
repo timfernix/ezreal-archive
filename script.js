@@ -62,7 +62,7 @@ const SKINLINE_ICON_URLS = {
     'Prestige Porcelain Protector': 'https://assets.timfernix.dev/icons/Prestige_Porcelain_Protector_Chibi.jpg',
     'Prestige PsyOps': 'https://assets.timfernix.dev/icons/Prestige_PsyOps_Icon.jpg',
     'Prestige Select Weather Entity': 'https://assets.timfernix.dev/icons/Prestige_Select_Weather_Entity.png',
-    'Prosperous Changan Ezreal': 'https://assets.timfernix.dev/prosperous-changan/Prosperous_Changan_Icon.jpg',
+    "Prosperous Chang'an": 'https://assets.timfernix.dev/prosperous-changan/Prosperous_Changan_Icon.jpg',
     'Psyops': 'https://assets.timfernix.dev/icons/Ezreal_22.ico',
     'Pulsefire': 'https://assets.timfernix.dev/icons/Ezreal_5.ico',
     'SSG': 'https://assets.timfernix.dev/icons/Ezreal_19.ico',
@@ -101,6 +101,16 @@ const CATEGORY_DISPLAY_NAMES = {
     'Promoart': 'Promo-/Artwork'
 };
 const CHROMA_ICON_URL = 'https://assets.timfernix.dev/icons/chroma.png';
+
+// Warm the browser cache with all UI icons at high priority so large gallery media can't delay them.
+function preloadUiIcons() {
+    const urls = new Set([...Object.values(SKINLINE_ICON_URLS), ...Object.values(GAME_LOGO_URLS), ...Object.values(CATEGORY_ICON_URLS), CHROMA_ICON_URL]);
+    urls.forEach(url => {
+        const img = new Image();
+        img.fetchPriority = 'high';
+        img.src = url;
+    });
+}
 
 const container = document.getElementById('gallery-container');
 const searchInput = document.getElementById('searchInput');
@@ -1050,6 +1060,7 @@ function updateLightboxResolution(item, width, height) {
 }
 
 async function init() {
+    preloadUiIcons();
     try {
         const initialAssetId = getUrlParams().get('asset');
         deferInitialGalleryRender = Boolean(initialAssetId);
@@ -1182,7 +1193,7 @@ function createCheckboxes(menuId, options, filterType) {
             icon.className = 'filter-option-icon';
             icon.src = iconUrl;
             icon.alt = '';
-            icon.loading = 'lazy';
+            icon.fetchPriority = 'high';
             label.appendChild(icon);
         }
 
@@ -1435,7 +1446,7 @@ function createCardMetaIcon(url, label) {
     icon.src = url;
     icon.alt = label;
     icon.title = label;
-    icon.loading = 'lazy';
+    icon.fetchPriority = 'high';
     return icon;
 }
 
@@ -1494,6 +1505,7 @@ function hydrateCardPreview(mediaWrapper) {
             const img = document.createElement('img');
             img.src = previewImageUrl;
             img.alt = title;
+            img.fetchPriority = 'low';
             img.loading = 'eager';
             img.decoding = 'async';
             mediaWrapper.appendChild(img);
@@ -1521,6 +1533,7 @@ function hydrateCardPreview(mediaWrapper) {
         const img = document.createElement('img');
         img.src = mediaUrl;
         img.alt = title;
+        img.fetchPriority = 'low';
         img.loading = 'eager';
         img.decoding = 'async';
         mediaWrapper.appendChild(img);
