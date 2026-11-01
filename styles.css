@@ -1659,6 +1659,22 @@ a.info-button {
 }
 
 .card-favorite-btn svg { fill: none; }
+
+.card-new-badge {
+    position: absolute;
+    top: 0.55rem;
+    left: 0.55rem;
+    z-index: 3;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid rgba(16, 36, 45, 0.9);
+    background: #e1b85e;
+    color: #10242d;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+}
 .card-favorite-btn:hover,
 .card-favorite-btn:focus-visible { background: #203a47; outline: 2px solid #e1b85e; outline-offset: 1px; }
 .card-favorite-btn.is-active { background: #b68532; color: #10242d; }

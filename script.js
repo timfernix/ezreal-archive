@@ -331,6 +331,22 @@ function compareSkinReleaseDates(leftValue, rightValue, descending = false) {
     return leftSortDate.localeCompare(rightSortDate) * direction;
 }
 
+const NEW_BADGE_DAYS = 14;
+
+function isRecentlyUploaded(item) {
+    const uploaded = new Date(item.uploadedAt).getTime();
+    return Number.isFinite(uploaded) && Date.now() - uploaded >= 0 && Date.now() - uploaded <= NEW_BADGE_DAYS * 86400000;
+}
+
+function formatUploadedAt(value) {
+    const date = new Date(value);
+    if (!value || Number.isNaN(date.getTime())) {
+        return 'Unknown';
+    }
+
+    return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+}
+
 function formatSkinReleaseDate(value) {
     const releaseDate = String(normalizeValue(value) || 'Unknown');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(releaseDate)) {
@@ -957,6 +973,10 @@ function openLightbox(item, options = {}) {
             <div class="detail-item">
                 <span class="detail-label">Source:</span>
                 <span class="detail-value">${escapeHtml(item.source)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Uploaded:</span>
+                <span class="detail-value">${escapeHtml(item.source === 'asset' ? formatUploadedAt(item.uploadedAt) : 'N/A')}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Resolution:</span>
@@ -1604,6 +1624,12 @@ function renderGallery(allItems, { append = false } = {}) {
         }
 
         card.appendChild(mediaWrapper);
+        if (isRecentlyUploaded(item)) {
+            const badge = document.createElement('span');
+            badge.className = 'card-new-badge';
+            badge.textContent = 'New';
+            card.appendChild(badge);
+        }
         card.appendChild(favoriteButton);
         card.appendChild(info);
         fragment.appendChild(card);
@@ -1854,6 +1880,7 @@ function mapFlatItemToMediaItem(item) {
         url: normalizeValue(item.url) || '',
         thumbUrl: normalizeValue(item.thumbUrl) || '',
         previewUrl: normalizeValue(item.previewUrl) || '',
+        uploadedAt: normalizeValue(item.uploadedAt) || '',
         category: normalizeValue(item.category) || 'Uncategorized',
         game: normalizeValue(item.game) || 'Generic',
         source,
