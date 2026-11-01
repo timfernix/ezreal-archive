@@ -1516,6 +1516,8 @@ function setCardPreviewPlaceholder(mediaWrapper) {
 function queueCardPreviewLoad(mediaWrapper, item) {
     mediaWrapper.dataset.loaded = 'false';
     mediaWrapper.dataset.mediaUrl = resolveMediaUrl(item);
+    mediaWrapper.dataset.thumbUrl = item.thumbUrl ? `${ASSETS_BASE_URL}${item.thumbUrl}` : '';
+    mediaWrapper.dataset.previewUrl = item.previewUrl ? `${ASSETS_BASE_URL}${item.previewUrl}` : '';
     mediaWrapper.dataset.itemType = item.type;
     mediaWrapper.dataset.isExternal = String(isExternalItem(item));
     mediaWrapper.dataset.externalPreviewUrl = getExternalPreviewImageUrl(item) || '';
@@ -1552,6 +1554,8 @@ function hydrateCardPreview(mediaWrapper) {
     mediaWrapper.innerHTML = '';
 
     const mediaUrl = mediaWrapper.dataset.mediaUrl;
+    const thumbUrl = mediaWrapper.dataset.thumbUrl;
+    const previewUrl = mediaWrapper.dataset.previewUrl;
     const itemType = mediaWrapper.dataset.itemType;
     const isExternal = mediaWrapper.dataset.isExternal === 'true';
     const previewImageUrl = mediaWrapper.dataset.externalPreviewUrl;
@@ -1575,7 +1579,18 @@ function hydrateCardPreview(mediaWrapper) {
         }
     } else if (itemType === 'video') {
         const video = document.createElement('video');
-        video.src = mediaUrl;
+        // Small silent preview + poster for the grid; the lightbox still plays the original.
+        video.src = previewUrl || mediaUrl;
+        if (thumbUrl) {
+            video.poster = thumbUrl;
+        }
+        if (previewUrl) {
+            video.addEventListener('error', () => {
+                if (video.src !== mediaUrl) {
+                    video.src = mediaUrl;
+                }
+            }, { once: true });
+        }
         video.autoplay = true;
         video.loop = true;
         video.muted = true;
@@ -1589,7 +1604,15 @@ function hydrateCardPreview(mediaWrapper) {
         mediaWrapper.appendChild(audioPreview);
     } else {
         const img = document.createElement('img');
-        img.src = mediaUrl;
+        img.src = thumbUrl || mediaUrl;
+        if (thumbUrl) {
+            // A missing or broken thumbnail falls back to the original.
+            img.addEventListener('error', () => {
+                if (img.src !== mediaUrl) {
+                    img.src = mediaUrl;
+                }
+            }, { once: true });
+        }
         img.alt = title;
         img.fetchPriority = 'low';
         img.loading = 'eager';
@@ -1645,6 +1668,8 @@ function mapFlatItemToMediaItem(item) {
         description,
         type: normalizeValue(item.type) || 'image',
         url: normalizeValue(item.url) || '',
+        thumbUrl: normalizeValue(item.thumbUrl) || '',
+        previewUrl: normalizeValue(item.previewUrl) || '',
         category: normalizeValue(item.category) || 'Uncategorized',
         game: normalizeValue(item.game) || 'Generic',
         source,
