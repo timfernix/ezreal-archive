@@ -915,15 +915,15 @@ function openLightbox(item, options = {}) {
         technicalDiv.innerHTML = `
             <div class="detail-item">
                 <span class="detail-label">ID:</span>
-                <span class="detail-value">${item.databaseId || 'Unknown'}</span>
+                <span class="detail-value">${escapeHtml(item.databaseId || 'Unknown')}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Type:</span>
-                <span class="detail-value">${item.type}</span>
+                <span class="detail-value">${escapeHtml(item.type)}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Source:</span>
-                <span class="detail-value">${item.source}</span>
+                <span class="detail-value">${escapeHtml(item.source)}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Resolution:</span>
@@ -995,28 +995,28 @@ function openLightbox(item, options = {}) {
     detailsDiv.innerHTML = `
         <div class="detail-item">
             <span class="detail-label">Skin:</span>
-            <span class="detail-value">${item.skinName}</span>
+            <span class="detail-value">${escapeHtml(item.skinName)}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Skin Release Date:</span>
-            <span class="detail-value">${formatSkinReleaseDate(item.skinReleaseDate)}</span>
+            <span class="detail-value">${escapeHtml(formatSkinReleaseDate(item.skinReleaseDate))}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Game:</span>
-            <span class="detail-value">${item.game !== 'Generic' ? item.game : 'N/A'}</span>
+            <span class="detail-value">${escapeHtml(item.game !== 'Generic' ? item.game : 'N/A')}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Category:</span>
-            <span class="detail-value">${CATEGORY_DISPLAY_NAMES[item.category] || item.category}</span>
+            <span class="detail-value">${escapeHtml(CATEGORY_DISPLAY_NAMES[item.category] || item.category)}</span>
         </div>
         <div class="detail-item">
             <span class="detail-label">Asset Release Year:</span>
-            <span class="detail-value">${item.releaseYear}</span>
+            <span class="detail-value">${escapeHtml(item.releaseYear)}</span>
         </div>
         ${item.platform ? `
         <div class="detail-item">
             <span class="detail-label">Platform:</span>
-            <span class="detail-value">${item.platform}</span>
+            <span class="detail-value">${escapeHtml(item.platform)}</span>
         </div>` : ''}
     `;
 
@@ -1270,6 +1270,10 @@ async function fetchFilterOptions() {
         console.error('Failed to fetch catalog:', err);
         throw err;
     }
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
 // Renders whatever is currently in allMediaItems (already filtered/sorted server-side).
