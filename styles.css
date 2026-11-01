@@ -1272,7 +1272,7 @@ body::before { display: none; }
     box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.24);
     contain: content;
     content-visibility: auto;
-    contain-intrinsic-size: 366px;
+    contain-intrinsic-size: auto 366px;
 }
 
 .card::before { display: none; }

@@ -24,6 +24,7 @@ let totalAvailableItems = null;
 let catalogVersion = null;
 let catalogGeneratedAt = null;
 let deferInitialGalleryRender = false;
+let renderedItemCount = 0;
 let allAvailableFilterOptions = { skinlines: [], categories: [], games: [], tags: [] };
 let searchDebounceTimer = null;
 let showFavoritesOnly = false;
@@ -1273,7 +1274,7 @@ async function fetchFilterOptions() {
 
 // Renders whatever is currently in allMediaItems (already filtered/sorted server-side).
 function applyFilters(options = {}) {
-    const { syncUrl = true, deferRender = false } = options;
+    const { syncUrl = true, deferRender = false, append = false } = options;
     const searchTerm = searchInput.value.trim().toLowerCase();
     const favoriteKeySet = new Set(readFavoriteKeys());
     const matchingItems = allMediaItems
@@ -1315,7 +1316,7 @@ function applyFilters(options = {}) {
         container.innerHTML = '';
         noResultsIndicator.classList.add('hidden');
     } else {
-        renderGallery(displayedItems);
+        renderGallery(displayedItems, { append });
     }
 
     updateArchiveMeta(displayedItems);
@@ -1335,8 +1336,18 @@ async function reloadFromServer(options = {}) {
     applyFilters({ syncUrl });
 }
 
-function renderGallery(items) {
-    container.innerHTML = '';
+function renderGallery(allItems, { append = false } = {}) {
+    // Appending keeps existing cards in the DOM so the scroll position and loaded images stay untouched.
+    const canAppend = append && renderedItemCount > 0 && renderedItemCount <= allItems.length;
+    const items = canAppend ? allItems.slice(renderedItemCount) : allItems;
+    if (!canAppend) {
+        container.innerHTML = '';
+    }
+    renderedItemCount = allItems.length;
+
+    if (canAppend && items.length === 0) {
+        return;
+    }
 
     if (items.length === 0) {
         noResultsIndicator.classList.remove('hidden');
@@ -1421,13 +1432,16 @@ function renderGallery(items) {
         fragment.appendChild(card);
     });
 
+    const firstNewCardIndex = container.children.length;
     container.appendChild(fragment);
     updateFavoriteButtons();
 
     // Eager-load first N cards for faster initial scroll experience
     let eagerCount = 0;
-    container.querySelectorAll('.card-media').forEach(mediaWrapper => {
-        if (eagerCount < EAGER_LOAD_COUNT) {
+    Array.from(container.children).slice(firstNewCardIndex).forEach(card => {
+        const mediaWrapper = card.querySelector('.card-media');
+        if (!mediaWrapper) return;
+        if (!canAppend && eagerCount < EAGER_LOAD_COUNT) {
             hydrateCardPreview(mediaWrapper);
             eagerCount++;
         } else {
@@ -1605,7 +1619,7 @@ async function loadNextPage() {
     }
 
     serverOffset += PAGE_SIZE;
-    applyFilters();
+    applyFilters({ append: true });
 }
 
 function setupAutoLoadObserver() {
