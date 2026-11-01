@@ -1,4 +1,5 @@
-const CATALOG_MANIFEST_URL = ['127.0.0.1', 'localhost'].includes(window.location.hostname)
+const IS_LOCAL_HOST = window.location.hostname === 'localhost' || /^127\./.test(window.location.hostname);
+const CATALOG_MANIFEST_URL = IS_LOCAL_HOST
     ? '/catalog/catalog-manifest.json'
     : 'https://assets.timfernix.dev/catalog/catalog-manifest.json';
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
@@ -1225,7 +1226,14 @@ async function init() {
                 applyFilters({ syncUrl: false, deferRender: true });
             }
         } else {
+            const savedScroll = readSavedScrollState();
+            if (savedScroll) {
+                serverOffset = Math.max(PAGE_SIZE, savedScroll.offset);
+            }
             applyFilters({ syncUrl: false });
+            if (savedScroll) {
+                restoreScrollPosition(savedScroll.y);
+            }
         }
 
         loadingIndicator.classList.add('hidden');
@@ -1234,6 +1242,76 @@ async function init() {
         loadingIndicator.textContent = 'Failed to load archive.';
     }
 }
+
+const SCROLL_STATE_KEY = 'ezreal-scroll-state';
+
+function saveScrollState() {
+    if (!container || container.children.length === 0 || !lightbox.classList.contains('hidden')) {
+        return;
+    }
+
+    try {
+        sessionStorage.setItem(SCROLL_STATE_KEY, JSON.stringify({
+            search: window.location.search,
+            y: Math.round(window.scrollY),
+            offset: serverOffset
+        }));
+    } catch {
+        // Storage can be unavailable (private mode); losing the position is harmless.
+    }
+}
+
+// The default sort is added to the URL after load, so "" and "?sort=newest" describe the same view.
+function normalizeSearchForScroll(search) {
+    const params = new URLSearchParams(search);
+    if (params.get('sort') === 'newest') {
+        params.delete('sort');
+    }
+    return params.toString();
+}
+
+// Only restore when the visitor is coming back (history navigation, reload, or from the timeline page) to the same search.
+function readSavedScrollState() {
+    let saved;
+    try {
+        saved = JSON.parse(sessionStorage.getItem(SCROLL_STATE_KEY) || 'null');
+    } catch {
+        return null;
+    }
+
+    if (!saved || normalizeSearchForScroll(saved.search) !== normalizeSearchForScroll(window.location.search) || !(saved.y > 0)) {
+        return null;
+    }
+
+    const navigationType = performance.getEntriesByType('navigation')[0]?.type;
+    const cameFromTimeline = /\/timeline(\.html)?$/.test(document.referrer.split(/[?#]/)[0]);
+    return navigationType === 'back_forward' || navigationType === 'reload' || cameFromTimeline ? saved : null;
+}
+
+function restoreScrollPosition(y) {
+    const apply = () => window.scrollTo(0, y);
+    apply();
+    requestAnimationFrame(() => {
+        apply();
+        setTimeout(apply, 150);
+    });
+}
+
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+
+let scrollSaveTimer = null;
+window.addEventListener('scroll', () => {
+    clearTimeout(scrollSaveTimer);
+    scrollSaveTimer = setTimeout(saveScrollState, 200);
+}, { passive: true });
+window.addEventListener('pagehide', saveScrollState);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        saveScrollState();
+    }
+});
 
 function createCheckboxes(menuId, options, filterType) {
     const menu = document.getElementById(menuId);
@@ -1350,7 +1428,7 @@ async function fetchFilterOptions() {
 
 // Local-only hint: filter values without an icon-map entry silently render without an icon (keys must match exactly).
 function warnAboutMissingIcons() {
-    if (!['127.0.0.1', 'localhost'].includes(window.location.hostname)) {
+    if (!IS_LOCAL_HOST) {
         return;
     }
 
@@ -1581,11 +1659,18 @@ function createPreviewObserver() {
     });
 }
 
+// The shimmer skeleton is drawn by CSS on .card-media until it is marked ready.
 function setCardPreviewPlaceholder(mediaWrapper) {
-    const placeholder = document.createElement('div');
-    placeholder.className = 'external-link-preview';
-    placeholder.textContent = 'Loading preview...';
-    mediaWrapper.appendChild(placeholder);
+    mediaWrapper.innerHTML = '';
+    mediaWrapper.classList.remove('is-ready');
+}
+
+function markCardMediaReady(mediaWrapper) {
+    mediaWrapper.classList.add('is-ready');
+}
+
+function markCardMediaFailed(mediaWrapper) {
+    mediaWrapper.classList.add('is-ready', 'is-failed');
 }
 
 function queueCardPreviewLoad(mediaWrapper, item) {
@@ -1616,7 +1701,6 @@ function cancelPendingCardPreview(mediaWrapper) {
     if (media instanceof HTMLVideoElement) {
         media.load();
     }
-    mediaWrapper.innerHTML = '';
     setCardPreviewPlaceholder(mediaWrapper);
     mediaWrapper.dataset.loaded = 'false';
 }
@@ -1626,7 +1710,7 @@ function hydrateCardPreview(mediaWrapper) {
         return;
     }
 
-    mediaWrapper.innerHTML = '';
+    setCardPreviewPlaceholder(mediaWrapper);
 
     const mediaUrl = mediaWrapper.dataset.mediaUrl;
     const thumbUrl = mediaWrapper.dataset.thumbUrl;
@@ -1640,6 +1724,8 @@ function hydrateCardPreview(mediaWrapper) {
     if (isExternal) {
         if (previewImageUrl) {
             const img = document.createElement('img');
+            img.addEventListener('load', () => markCardMediaReady(mediaWrapper), { once: true });
+            img.addEventListener('error', () => markCardMediaReady(mediaWrapper), { once: true });
             img.src = previewImageUrl;
             img.alt = title;
             img.fetchPriority = 'low';
@@ -1651,9 +1737,16 @@ function hydrateCardPreview(mediaWrapper) {
             externalPreview.className = 'external-link-preview';
             externalPreview.textContent = platform ? `External: ${platform}` : 'External Link';
             mediaWrapper.appendChild(externalPreview);
+            markCardMediaReady(mediaWrapper);
         }
     } else if (itemType === 'video') {
         const video = document.createElement('video');
+        video.addEventListener('loadeddata', () => markCardMediaReady(mediaWrapper), { once: true });
+        video.addEventListener('error', () => {
+            if (video.src === mediaUrl || !previewUrl) {
+                markCardMediaReady(mediaWrapper);
+            }
+        });
         // Small silent preview + poster for the grid; the lightbox still plays the original.
         video.src = previewUrl || mediaUrl;
         if (thumbUrl) {
@@ -1677,8 +1770,24 @@ function hydrateCardPreview(mediaWrapper) {
         audioPreview.className = 'external-link-preview audio-preview';
         audioPreview.textContent = 'Audio file';
         mediaWrapper.appendChild(audioPreview);
+        markCardMediaReady(mediaWrapper);
     } else {
         const img = document.createElement('img');
+        img.addEventListener('load', () => {
+            if (img.naturalWidth === 0) {
+                markCardMediaFailed(mediaWrapper);
+            } else {
+                markCardMediaReady(mediaWrapper);
+            }
+        }, { once: true });
+        // Registered before the fallback listener so a failed thumbnail keeps the skeleton until the original loads.
+        img.addEventListener('error', () => {
+            if (!thumbUrl || img.src === thumbUrl) {
+                if (!thumbUrl) markCardMediaFailed(mediaWrapper);
+                return;
+            }
+            markCardMediaFailed(mediaWrapper);
+        });
         img.src = thumbUrl || mediaUrl;
         if (thumbUrl) {
             // A missing or broken thumbnail falls back to the original.

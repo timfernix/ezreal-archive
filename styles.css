@@ -259,6 +259,35 @@ select option { background-color: var(--bg-card); color: var(--text-main); }
     height: 100%;
     object-fit: cover;
     display: block;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.card-media.is-ready img, .card-media.is-ready video {
+    opacity: 1;
+}
+
+.card-media.is-failed img, .card-media.is-failed video {
+    opacity: 0;
+}
+
+.card-media:not(.is-ready)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(125, 211, 252, 0.09) 50%, transparent 70%) 0 0 / 250% 100%;
+    animation: card-skeleton-shimmer 1.4s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes card-skeleton-shimmer {
+    from { background-position: 150% 0; }
+    to { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-media:not(.is-ready)::before { animation: none; }
+    .card-media img, .card-media video { transition: none; }
 }
 
 .external-link-preview {
