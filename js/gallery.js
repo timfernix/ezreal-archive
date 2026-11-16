@@ -1,9 +1,9 @@
 import { ASSETS_BASE_URL, EAGER_LOAD_COUNT, PREVIEW_MARGIN } from './config.js';
 import { container, noResultsIndicator } from './dom.js';
-import { getFavoriteKey, toggleFavorite, updateFavoriteButtons } from './favorites.js';
+import { getFavoriteKey, toggleFavorite, updateFavoriteButtons } from './favorites.js?v=short-links';
 import { CATEGORY_DISPLAY_NAMES, CATEGORY_ICON_URLS, CHROMA_ICON_URL, GAME_LOGO_URLS } from './icons.js';
 import { getExternalPreviewImageUrl, isExternalItem, isRecentlyUploaded, resolveMediaUrl } from './items.js';
-import { openLightbox } from './lightbox.js';
+import { openLightbox } from './lightbox.js?v=short-links';
 
 let renderedItemCount = 0;
 

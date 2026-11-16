@@ -6,3 +6,4 @@ package.json
 .assetsignore
 start-local.ps1
 sync-local-db.ps1
+tests/

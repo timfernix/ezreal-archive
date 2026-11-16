@@ -1,11 +1,12 @@
-import { applyFilters } from './catalog.js';
+import { applyFilters } from './catalog.js?v=short-links';
 import { lightbox, lightboxImg, originalLink, shareAssetLinkButton } from './dom.js';
-import { updateFavoriteButtons } from './favorites.js';
+import { updateFavoriteButtons } from './favorites.js?v=short-links';
 import { CATEGORY_DISPLAY_NAMES } from './icons.js';
 import { escapeHtml, formatSkinReleaseDate, formatUploadedAt, getExternalPreviewImageUrl, getYouTubeEmbedUrl, isExternalItem, resolveMediaUrl } from './items.js';
 import { state } from './state.js';
 import { copyToClipboard } from './ui.js';
-import { buildAssetOnlyShareUrl, getAssetShareId, getUrlParams, syncUrlWithState } from './urlstate.js';
+import { buildAssetOnlyShareUrl, getAssetShareId, getUrlParams, syncUrlWithState } from './urlstate.js?v=short-links';
+import { findSharedItem } from './share-links.js';
 
 let lightboxZoomed = false;
 
@@ -21,11 +22,7 @@ export function openAssetFromUrlParam(assetIdFromInit) {
     const params = getUrlParams();
     const assetId = assetIdFromInit || params.get('asset');
 
-    if (!assetId) {
-        return;
-    }
-
-    const item = state.allMediaItems.find(media => getAssetShareId(media) === assetId);
+    const item = findSharedItem(state.allMediaItems, window.location.pathname, assetId);
     if (item) {
         openLightbox(item, { syncUrl: false });
     }

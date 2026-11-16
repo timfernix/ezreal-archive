@@ -1,9 +1,10 @@
-import { reloadFromServer } from './catalog.js';
+import { reloadFromServer } from './catalog.js?v=short-links';
 import { SHARE_BASE_URL } from './config.js';
 import { searchInput } from './dom.js';
-import { setFavoritesFilter } from './favorites.js';
+import { setFavoritesFilter } from './favorites.js?v=short-links';
 import { state } from './state.js';
 import { showToast } from './ui.js';
+import { getShortAssetPath } from './share-links.js';
 
 export function getAssetShareId(item) {
     return `${item.source || 'asset'}:${item.url}`;
@@ -84,7 +85,7 @@ export function clearAllFilters() {
 }
 
 export function buildShareableUrl(item, useCustomBase = false) {
-    const baseUrl = useCustomBase ? SHARE_BASE_URL : window.location.origin + window.location.pathname;
+    const baseUrl = useCustomBase ? SHARE_BASE_URL : `${window.location.origin}/`;
     const url = new URL(baseUrl);
 
     const searchTerm = searchInput.value.trim();
@@ -102,18 +103,28 @@ export function buildShareableUrl(item, useCustomBase = false) {
     state.activeFilters.tags.forEach(value => url.searchParams.append('tag', value));
 
     if (item) {
-        url.searchParams.set('asset', getAssetShareId(item));
+        const path = getShortAssetPath(item);
+        if (path) {
+            url.pathname = path;
+        } else {
+            url.searchParams.set('asset', getAssetShareId(item));
+        }
     }
 
     return url;
 }
 
 export function buildAssetOnlyShareUrl(item, useCustomBase = false) {
-    const baseUrl = useCustomBase ? SHARE_BASE_URL : window.location.origin + window.location.pathname;
+    const baseUrl = useCustomBase ? SHARE_BASE_URL : `${window.location.origin}/`;
     const url = new URL(baseUrl);
 
     if (item) {
-        url.searchParams.set('asset', getAssetShareId(item));
+        const path = getShortAssetPath(item);
+        if (path) {
+            url.pathname = path;
+        } else {
+            url.searchParams.set('asset', getAssetShareId(item));
+        }
     }
 
     return url;

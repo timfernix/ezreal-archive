@@ -1,11 +1,11 @@
 import { PAGE_SIZE } from './config.js';
 import { autoLoadSentinel, container, loadMoreButton, noResultsIndicator, paginationControls, paginationStatus, searchInput } from './dom.js';
-import { getFavoriteKey, readFavoriteKeys } from './favorites.js';
-import { renderGallery } from './gallery.js';
+import { getFavoriteKey, readFavoriteKeys } from './favorites.js?v=short-links';
+import { renderGallery } from './gallery.js?v=short-links';
 import { compareSkinReleaseDates, deriveSkinlineFromName, normalizeValue, resolveSkinReleaseDate } from './items.js';
 import { state } from './state.js';
 import { updateArchiveMeta } from './ui.js';
-import { syncUrlWithState } from './urlstate.js';
+import { syncUrlWithState } from './urlstate.js?v=short-links';
 
 let hasMoreServerData = true;
 

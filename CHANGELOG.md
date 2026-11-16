@@ -13,6 +13,7 @@ Notable updates to the Ezreal Media Archive.
 - The archive remembers your scroll position when returning from an asset, the timeline, or a reload.
 - Shared asset links now show the asset's title and image in link previews (e.g. Discord).
 - Fixed jumping while scrolling
+- Shareable shortlinks instead of full asset name links
 
 ## 2026-10
 

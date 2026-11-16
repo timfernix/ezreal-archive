@@ -1,3 +1,5 @@
+import { findSharedItem, parseShortAssetPath } from '../js/share-links.js';
+
 const ASSETS_BASE_URL = 'https://assets.timfernix.dev/';
 const MANIFEST_URL = `${ASSETS_BASE_URL}catalog/catalog-manifest.json`;
 const SHARE_BASE_URL = 'https://ezreal.timfernix.dev/';
@@ -18,13 +20,15 @@ async function fetchJsonCached(url, ttlSeconds, context) {
     return JSON.parse(body);
 }
 
-async function findAsset(assetId, context) {
+async function findAsset(pathname, assetId, context) {
     const manifest = await fetchJsonCached(MANIFEST_URL, 300, context);
     const catalogUrl = new URL(manifest.catalogUrl, MANIFEST_URL).href;
     // The catalog URL is content-hashed, so it can be cached for a long time.
     const catalog = await fetchJsonCached(catalogUrl, 86400, context);
     const items = Array.isArray(catalog.items) ? catalog.items : [];
-    return items.find((item) => item.id === assetId) || items.find((item) => item.url === assetId) || null;
+    return findSharedItem(items, pathname, assetId)
+        || (!parseShortAssetPath(pathname) && items.find(item => item.url === assetId))
+        || null;
 }
 
 function isAbsoluteUrl(value) {
@@ -52,20 +56,26 @@ function setContent(value) {
 }
 
 export async function onRequestGet(context) {
-    const response = await context.next();
+    const url = new URL(context.request.url);
+    const shortPath = parseShortAssetPath(url.pathname);
+    const pageUrl = new URL('/', url);
+    const response = shortPath
+        ? await context.next(new Request(pageUrl, context.request))
+        : await context.next();
     try {
-        const url = new URL(context.request.url);
         const assetId = url.searchParams.get('asset');
         const contentType = response.headers.get('content-type') || '';
-        if (!assetId || !contentType.includes('text/html')) return response;
+        if ((!assetId && !shortPath) || !contentType.includes('text/html')) return response;
 
-        const item = await findAsset(assetId, context);
+        const item = await findAsset(url.pathname, assetId, context);
         if (!item) return response;
 
         const title = item.title ? `${item.title} - Ezreal Media Archive` : 'Ezreal Media Archive';
         const description = buildDescription(item);
         const image = pickImage(item);
-        const shareUrl = `${SHARE_BASE_URL}?asset=${encodeURIComponent(assetId)}`;
+        const shareUrl = shortPath
+            ? new URL(url.pathname.replace(/\/$/, ''), SHARE_BASE_URL).href
+            : `${SHARE_BASE_URL}?asset=${encodeURIComponent(assetId)}`;
         const imageAlt = item.title || 'Ezreal Media Archive preview image';
 
         const rewriter = new HTMLRewriter()
@@ -90,6 +100,8 @@ export async function onRequestGet(context) {
 
         return rewriter.transform(response);
     } catch (error) {
+        console.error('Unable to generate asset link preview:', error);
         return response;
     }
 }
+

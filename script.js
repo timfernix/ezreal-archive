@@ -1,14 +1,15 @@
-import { applyFilters, loadNextPage, reloadFromServer, setupAutoLoadObserver } from './js/catalog.js';
+import { applyFilters, loadNextPage, reloadFromServer, setupAutoLoadObserver } from './js/catalog.js?v=short-links';
 import { PAGE_SIZE, SEARCH_DEBOUNCE_MS } from './js/config.js';
 import { clearFiltersButton, favoritesFilterButton, favoritesNotice, favoritesNoticeClose, lightboxFavoriteButton, loadMoreButton, loadingIndicator, mobileFilterToggle, searchInput, shareSearchButton } from './js/dom.js';
-import { FAVORITES_NOTICE_COOKIE, setFavoritesFilter, toggleFavorite, updateFavoriteButtons, writeCookie } from './js/favorites.js';
-import { createCheckboxes, fetchFilterOptions, warnAboutMissingIcons } from './js/filters.js';
+import { FAVORITES_NOTICE_COOKIE, setFavoritesFilter, toggleFavorite, updateFavoriteButtons, writeCookie } from './js/favorites.js?v=short-links';
+import { createCheckboxes, fetchFilterOptions, warnAboutMissingIcons } from './js/filters.js?v=short-links';
 import { preloadUiIcons } from './js/icons.js';
-import { openAssetFromUrlParam } from './js/lightbox.js';
+import { openAssetFromUrlParam } from './js/lightbox.js?v=short-links';
 import { readSavedScrollState, restoreScrollPosition } from './js/scroll.js';
 import { state } from './js/state.js';
 import { copyToClipboard, showToast } from './js/ui.js';
-import { applyUrlStateToInputs, buildShareableUrl, clearAllFilters, getUrlParams, syncCheckboxUIWithActiveFilters } from './js/urlstate.js';
+import { parseShortAssetPath } from './js/share-links.js';
+import { applyUrlStateToInputs, buildShareableUrl, clearAllFilters, getUrlParams, syncCheckboxUIWithActiveFilters } from './js/urlstate.js?v=short-links';
 
 let searchDebounceTimer = null;
 
@@ -16,7 +17,8 @@ async function init() {
     preloadUiIcons();
     try {
         const initialAssetId = getUrlParams().get('asset');
-        state.deferInitialGalleryRender = Boolean(initialAssetId);
+        const hasSharedAsset = Boolean(initialAssetId || parseShortAssetPath(window.location.pathname));
+        state.deferInitialGalleryRender = hasSharedAsset;
 
         // Fetch the full static catalog once; all later gallery operations are local.
         await fetchFilterOptions();
@@ -92,7 +94,7 @@ async function init() {
 
         setupAutoLoadObserver();
 
-        if (initialAssetId) {
+        if (hasSharedAsset) {
             openAssetFromUrlParam(initialAssetId);
             if (!state.currentLightboxItem) {
                 state.deferInitialGalleryRender = false;

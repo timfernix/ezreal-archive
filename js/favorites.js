@@ -1,8 +1,8 @@
-import { applyFilters } from './catalog.js';
+import { applyFilters } from './catalog.js?v=short-links';
 import { favoritesFilterButton, favoritesNotice, lightboxFavoriteButton } from './dom.js';
 import { state } from './state.js';
 import { showToast } from './ui.js';
-import { getAssetShareId } from './urlstate.js';
+import { getAssetShareId } from './urlstate.js?v=short-links';
 
 export const FAVORITES_COOKIE = 'ezreal_favorites';
 

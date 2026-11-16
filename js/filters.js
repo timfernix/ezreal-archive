@@ -1,8 +1,8 @@
-import { mapFlatItemToMediaItem, reloadFromServer } from './catalog.js';
+import { mapFlatItemToMediaItem, reloadFromServer } from './catalog.js?v=short-links';
 import { CATALOG_MANIFEST_URL, IS_LOCAL_HOST } from './config.js';
 import { CATEGORY_DISPLAY_NAMES, CATEGORY_ICON_URLS, GAME_LOGO_URLS, SKINLINE_ICON_URLS } from './icons.js';
 import { state } from './state.js';
-import { syncCheckboxUIWithActiveFilters } from './urlstate.js';
+import { syncCheckboxUIWithActiveFilters } from './urlstate.js?v=short-links';
 
 export function createCheckboxes(menuId, options, filterType) {
     const menu = document.getElementById(menuId);
