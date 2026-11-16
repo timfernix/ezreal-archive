@@ -36,11 +36,11 @@ function isAbsoluteUrl(value) {
 }
 
 function pickImage(item) {
+    if (item.type === 'image' && item.url && item.source !== 'external' && item.source !== 'external_link') {
+        return isAbsoluteUrl(item.url) ? item.url : `${ASSETS_BASE_URL}${item.url}`;
+    }
     if (item.thumbUrl) {
         return isAbsoluteUrl(item.thumbUrl) ? item.thumbUrl : `${ASSETS_BASE_URL}${item.thumbUrl}`;
-    }
-    if (item.type === 'image' && item.url && item.source !== 'external') {
-        return isAbsoluteUrl(item.url) ? item.url : `${ASSETS_BASE_URL}${item.url}`;
     }
     return null;
 }
